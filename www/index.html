@@ -22,9 +22,9 @@ header{position:sticky;top:0;z-index:20;background:rgba(242,242,247,.85);backdro
 .largetitle{font-size:32px;font-weight:800;letter-spacing:-.5px;margin:4px 0 8px;text-align:center}
 .largetitle span{font-size:15px;font-weight:600;color:var(--mut);display:block;letter-spacing:0}
 .widgets{display:flex;gap:8px}
-.w{flex:1;background:var(--card);border-radius:16px;padding:10px;text-align:center;box-shadow:0 1px 4px #0001}
-.w b{display:block;font-size:18px}
-.w span{font-size:11px;color:var(--mut);font-weight:600}
+.w{flex:1;background:var(--card);border-radius:14px;padding:6px;text-align:center;box-shadow:0 1px 4px #0001}
+.w b{display:block;font-size:15px}
+.w span{font-size:10px;color:var(--mut);font-weight:600}
 /* Segmented days iOS */
 .days{display:flex;gap:8px;justify-content:safe center;margin-top:10px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
 .days::-webkit-scrollbar{display:none}
@@ -65,6 +65,7 @@ nav button.active{color:var(--blue)}
 section.view{display:none}section.view.active{display:block}
 .rank{background:#fff;border-radius:16px;padding:14px;font-weight:800;text-align:center;box-shadow:0 1px 4px #0001;margin:8px 0}
 .mot{font-size:13px;color:#3A3A3C;background:#fff;border-radius:16px;padding:12px;margin-top:10px;box-shadow:0 1px 4px #0001}
+#motBox{text-align:center}
 #timerModal{position:fixed;inset:0;background:#0005;display:none;place-items:end center;z-index:50;padding:0}
 #timerBox{background:#F2F2F7;border-radius:20px 20px 0 0;padding:18px;width:100%;max-width:520px;text-align:center;padding-bottom:calc(20px + env(safe-area-inset-bottom))}
 #timerTime{font-size:64px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-2px}
@@ -93,8 +94,8 @@ section.view{display:none}section.view.active{display:block}
 </head>
 <body>
 <header>
-<div class="navsmall"><button id="btnHoy">‹ Hoy</button><span>Base Élite MX</span><span></span></div>
-<div class="largetitle">Calendario <span id="subTitle">Futuro mejor base de México</span></div>
+<div class="navsmall"><button id="btnHoy">‹ Hoy</button><span>Ser Base Élite MX</span><span></span></div>
+<div class="largetitle">Estrategia del Día <span id="subTitle">Futuro mejor base de México</span></div>
 <div class="widgets">
 <div class="w"><b id="sPts">0</b><span>Puntos</span></div>
 <div class="w"><b id="sPct">0%</b><span>Progreso</span></div>
@@ -111,6 +112,8 @@ section.view{display:none}section.view.active{display:block}
 <div id="checkAlert"></div>
 <div class="secTitle">Horario hora a hora</div>
 <div class="group" id="list"></div>
+<div class="row"><button class="ibtn ibtn-gray" id="btnOpts">Opciones</button></div>
+<div id="dayOpts" style="display:none">
 <div class="row"><button class="ibtn ibtn-gray" id="btnEditDay">Editar horario</button></div>
 <div class="row" id="dayEditBtns" style="display:none"><button class="ibtn ibtn-blue" id="btnAddB">Agregar bloque</button><button class="ibtn ibtn-gray" id="btnResetSched" style="color:var(--red)">Restablecer horario</button></div>
 <div class="group" id="blockForm" style="display:none;margin-top:8px">
@@ -123,6 +126,7 @@ section.view{display:none}section.view.active{display:block}
 </div>
 <div class="row" id="blockFormBtns" style="display:none"><button class="ibtn ibtn-blue" id="bfSave">Guardar</button><button class="ibtn ibtn-gray" id="bfCancel">Cancelar</button></div>
 <div class="row"><button class="ibtn ibtn-gray" id="btnReset">Reiniciar día</button></div>
+</div>
 <div class="mot" id="motBox"></div>
 </section>
 <section id="v-base" class="view">
@@ -196,7 +200,7 @@ section.view{display:none}section.view.active{display:block}
 <div class="secTitle">Cómo hacerlo</div>
 <ol id="dSteps"></ol>
 <div class="mot" id="dTip"></div>
-<div class="secTitle">Mi rutina (opcional)</div>
+<div class="secTitle" id="dCustomTitle">Mi rutina (opcional)</div>
 <textarea id="dCustom" rows="4" placeholder="Escribe su rutina real aquí, un paso por línea. Se mostrará en vez de la genérica."></textarea>
 <div class="row"><button class="ibtn ibtn-blue" id="dSaveCustom">Guardar mi rutina</button></div>
 <div class="row">
@@ -221,7 +225,7 @@ B("15:00","15:45","Comida principal","Comida preparada por mamá. ¡Qué rico!",
 B("15:45","16:45","Tareas escolares","Sin cel. 25 min focus x2.","escuela",60),
 B("16:45","17:00","Básquet IQ / Video","Highlights de un base, anota qué leyó.","basket",15,15),
 B("17:00","17:30","Colación + traslado al club","Plátano/sándwich + agua. Tenis, balón, toalla.","basket",30),
-B("18:00","20:00","Entrenamiento Club","Lun-Jue equipo. Viernes tiro. 110%, comunica en defensa.","basket",120),
+B("18:00","20:00","Entrenamiento Club","Tu encomienda: comunica en defensa.","basket",120),
 B("20:00","20:40","Cena ligera + baño","Cuenta a papá 1 cosa que mejoraste.","comida",40),
 B("20:40","20:55","Estiramientos nocturnos","Suave 15 min + respiración 4-4.","descanso",15,15),
 B("20:55","21:30","Desconexión total","Sin pantallas. Prepara ropa de mañana.","descanso",35),
@@ -309,20 +313,122 @@ const VISU=[
 "Día 28: lees que viene la trampa y pasas antes de que cierre.",
 "Día 29: diriges la última ofensiva: todos tocan el balón y encestan.",
 "Día 30: partido perfecto de base: 0 pérdidas, 10 asistencias y victoria."];
-function visuHoy(){return VISU[(new Date().getDate()-1)%VISU.length]}
+function stripDia(s){return String(s).replace(/^Día \d+:\s*/,"")}
+function visuHoy(){return stripDia(VISU[(new Date().getDate()-1)%VISU.length])}
+const REC=[
+"Día 1: calienta en serio desde el minuto 1, sin flojera.",
+"Día 2: habla en defensa en cada jugada: mía, cambio, ayuda.",
+"Día 3: pide una corrección al coach y aplícala hoy mismo.",
+"Día 4: corre cada contraataque aunque no te pasen.",
+"Día 5: defiende con las manos activas, sin cruzar los brazos.",
+"Día 6: bloquea el rebote con el cuerpo antes de saltar.",
+"Día 7: anota al salir una cosa que mejoraste.",
+"Día 8: llega 10 minutos antes y tira 20 cerca del aro.",
+"Día 9: en el 5 contra 5, organiza a tu equipo en voz alta.",
+"Día 10: no reclames al árbitro, corre a defender.",
+"Día 11: cierra al tirador con la mano arriba.",
+"Día 12: pasa y corta en cada ofensiva.",
+"Día 13: ayuda y recupera sin perder a tu hombre.",
+"Día 14: toma agua en cada pausa, no esperes al final.",
+"Día 15: pregunta al coach qué vio mal en ti hoy.",
+"Día 16: defiende el pick pasando por arriba con energía.",
+"Día 17: ataca el closeout con un bote y decide.",
+"Día 18: aplaude cada buena jugada de un compañero.",
+"Día 19: si fallas dos seguidas, busca asistir en la tercera.",
+"Día 20: mantén la postura defensiva todo el drill.",
+"Día 21: escucha el drill completo antes de empezar.",
+"Día 22: sé el primero en cada fila de los ejercicios.",
+"Día 23: corrige a un compañero con respeto.",
+"Día 24: acepta la corrección sin poner caras.",
+"Día 25: practica tu mano débil en el calentamiento.",
+"Día 26: grita el sistema en cada cambio de defensa.",
+"Día 27: niega el pase al mejor rival del otro equipo.",
+"Día 28: corre al balance defensivo en cada tiro.",
+"Día 29: pide el balón cuando el equipo lo necesita.",
+"Día 30: termina el entreno con 10 libres seguidos.",
+"Día 31: hoy enfócate solo en no perder balones.",
+"Día 32: hoy enfócate solo en asistir más que anotar.",
+"Día 33: defiende una posesión perfecta tras otra.",
+"Día 34: comunica cada cortina: voy, cambio, ayuda.",
+"Día 35: salta a cada rebote aunque no lo agarres.",
+"Día 36: felicita al rival al terminar el interescuadras.",
+"Día 37: repite el drill que te salió mal hasta que salga.",
+"Día 38: mantén contacto visual con el coach en la charla.",
+"Día 39: hojea tu libreta antes de entrenar: repasa tu meta.",
+"Día 40: juega cada drill como si fuera el partido.",
+"Día 41: no camines en la cancha, todo es corriendo.",
+"Día 42: ofrece recoger los balones al final.",
+"Día 43: estira con el equipo aunque tengas prisa.",
+"Día 44: cuenta tus pérdidas del interescuadras de hoy.",
+"Día 45: cuenta tus asistencias del interescuadras de hoy.",
+"Día 46: defiende sin hacer faltas tontas.",
+"Día 47: usa la finta antes de cada penetración.",
+"Día 48: termina cada bandeja con la mano correcta.",
+"Día 49: pide jugar contra el mejor del equipo.",
+"Día 50: aprende el nombre de una jugada nueva hoy.",
+"Día 51: ejecuta el sistema sin improvisar de más.",
+"Día 52: cuando te sientes, observa y aprende del juego.",
+"Día 53: entra frío y mete tu primer tiro: concéntrate.",
+"Día 54: defiende al poste negando el balón.",
+"Día 55: ayuda al grande y vuelve a tu hombre.",
+"Día 56: corre la banda en transición y pide el balón.",
+"Día 57: frena, planta los pies y tira equilibrado.",
+"Día 58: no forces pases entre tres defensas.",
+"Día 59: celebra el esfuerzo, no solo los puntos.",
+"Día 60: lleva tu toalla y agua: profesional desde los 12.",
+"Día 61: revisa tus tenis: amárralos bien antes de empezar.",
+"Día 62: hoy sé el más ruidoso animando en defensa.",
+"Día 63: practica el pase con las dos manos en filas.",
+"Día 64: mantén el bote vivo, no lo cargues.",
+"Día 65: ataca con velocidad controlada, no acelerado.",
+"Día 66: usa el cuerpo para proteger cada penetración.",
+"Día 67: lee al ayuda antes de entrar a la pintura.",
+"Día 68: saca el pase al tirador cuando colapsen.",
+"Día 69: tira solo cuando estés en ritmo y equilibrio.",
+"Día 70: persigue cada balón suelto como si valiera oro.",
+"Día 71: no discutas decisiones del coach en la duela.",
+"Día 72: pregunta en qué puedes ayudar al equipo hoy.",
+"Día 73: memoriza las jugadas nuevas antes del viernes.",
+"Día 74: defiende el saque de banda con presión.",
+"Día 75: cambia de ritmo para desmarcarte sin balón.",
+"Día 76: pon cortinas duras y abre con energía.",
+"Día 77: roll rápido al aro tras cada pick.",
+"Día 78: pop a tu distancia cómoda tras el pick.",
+"Día 79: comunica el reloj en los últimos minutos.",
+"Día 80: cierra el partido defendiendo el triple.",
+"Día 81: respira y sonríe: juegas porque lo amas.",
+"Día 82: agradece al coach al salir del entreno.",
+"Día 83: cuenta a papá tu mejor jugada de hoy.",
+"Día 84: duerme temprano: mañana hay más.",
+"Día 85: repasa mentalmente tus 3 mejores jugadas.",
+"Día 86: acepta jugar minutos pocos y aprovéchalos.",
+"Día 87: gana tu lugar con defensa, no con puntos.",
+"Día 88: sé puntual: el respeto empieza llegando a tiempo.",
+"Día 89: deja la duela mejor de como la encontraste.",
+"Día 90: 90 días de club te hacen otro jugador."];
+function recHoy(){const n=new Date();return stripDia(REC[Math.floor((n-new Date(n.getFullYear(),0,0))/864e5)%REC.length])}
+const ENCO=["Comunica en defensa todo el entreno.","Cero pérdidas hoy.","Asiste más de lo que anotas.","Corre cada contraataque.","Manos activas en defensa.","Bloquea cada rebote con el cuerpo.","Pide una corrección al coach.","Llega 10 minutos antes.","Organiza en voz alta el 5 contra 5.","Nada de reclamos: corre a defender.","Cierra al tirador con mano arriba.","Pasa y corta siempre.","Ayuda y recupera.","Toma agua en cada pausa.","Pregunta qué hiciste mal hoy.","Defiende el pick con energía.","Ataca el closeout y decide.","Aplaude a tus compañeros.","Si fallas dos, asiste la tercera.","Postura defensiva todo el drill.","Escucha el drill antes de empezar.","Primero en cada fila.","Corrige con respeto.","Acepta correcciones sin caras.","Usa tu mano débil al calentar.","Grita cada cambio defensivo.","Niega el balón al mejor rival.","Balance defensivo en cada tiro.","Pide el balón en el momento clave.","Cierra con 10 libres seguidos.","No camines en la duela.","Recoge los balones al final.","Estira con el equipo.","Cuenta tus pérdidas de hoy.","Cuenta tus asistencias de hoy.","Cero faltas tontas.","Finta antes de penetrar.","Termina cada bandeja bien.","Reta al mejor del equipo.","Aprende una jugada nueva.","Ejecuta el sistema sin improvisar.","Observa y aprende desde la banca.","Mete tu primer tiro al entrar.","Niega el balón al poste.","Ayuda al grande y vuelve.","Corre la banda en transición.","Tira solo en equilibrio.","Nada de pases entre tres defensas.","Lleva toalla y agua siempre.","Amarra bien tus tenis.","Sé el más ruidoso animando.","Bote vivo, sin cargarlo.","Velocidad controlada al atacar.","Protege cada penetración.","Lee la ayuda antes de entrar.","Saca el pase al tirador.","Persigue cada balón suelto.","No discutas con el coach.","Ofrece tu ayuda al equipo.","Memoriza las jugadas nuevas.","Presiona el saque de banda.","Desmárcate cambiando de ritmo.","Pon cortinas duras.","Comunica el reloj al final."];
+function encoHoy(){const n=new Date();return ENCO[Math.floor((n-new Date(n.getFullYear(),0,0))/864e5)%ENCO.length]}
 function getGuide(b){return GUIDES[b.title]||CATG[b.cat]||{p:[b.detail],t:"",e:""}}
 let curD=null;
 function openDetail(b,i,key,arr){curD={b,i,key,arr};
 document.getElementById("dCat").innerHTML=`<span class="pill" style="background:${COLORS[b.cat]}22;color:${COLORS[b.cat]==="#FFCC00"?"#8a6d00":COLORS[b.cat]}">${NAMES[b.cat]}</span>`;
 document.getElementById("dTitle").textContent=b.title;
 document.getElementById("dTime").textContent=`${b.start} – ${b.end} • ${b.mins} min`;
-document.getElementById("dDesc").textContent=b.detail;
+document.getElementById("dDesc").textContent=b.title==="Entrenamiento Club"?encoHoy():b.detail;
 const g=getGuide(b);
 const ej=(b.title==="Salida a secundaria")?visuHoy():g.e;
 const custom=(store.custom||{})[b.title]||[];
-document.getElementById("dSteps").innerHTML=(custom.length?custom.map(esc):g.p).map(s=>`<li>${s}</li>`).join("");
+const locked=b.title==="Entrenamiento Club";
+document.getElementById("dSteps").innerHTML=(custom.length&&!locked?custom.map(esc):g.p).map(s=>`<li>${s}</li>`).join("");
 document.getElementById("dCustom").value=custom.join("\n");
-document.getElementById("dTip").innerHTML=(g.t?`<b>Recomendación:</b> ${g.t}`:"")+(ej?`<br><b>Visualización de hoy:</b> ${ej}`:"");
+document.getElementById("dCustom").style.display=locked?"none":"";
+document.getElementById("dSaveCustom").style.display=locked?"none":"";
+document.getElementById("dCustomTitle").style.display=locked?"none":"";
+const ejLabel=b.title==="Salida a secundaria"?"Visualización de hoy":"Ejemplo";
+let tipHtml=(g.t?`<b>Recomendación:</b> ${esc(g.t)}`:"")+(ej?`<br><b>${ejLabel}:</b> ${esc(ej)}`:"");
+if(locked)tipHtml+=`<br><b>Recomendación de hoy:</b> ${esc(recHoy())}`;
+document.getElementById("dTip").innerHTML=tipHtml;
 const dt=document.getElementById("dTimer");dt.style.display=b.timer?"":"none";if(b.timer)dt.textContent=`Iniciar timer ${b.timer} min`;
 updDoneBtn();
 document.getElementById("detailModal").style.display="grid"}
@@ -347,7 +453,7 @@ const be=document.createElement("button");be.className="ibtn ibtn-gray";be.textC
 const bd=document.createElement("button");bd.className="ibtn ibtn-gray";bd.style.color="var(--red)";bd.textContent="X";bd.onclick=()=>{if(confirm("¿Eliminar este bloque?")){if(!store.sched[cur])store.sched[cur]=JSON.parse(JSON.stringify(SCH[cur]));store.sched[cur].splice(i,1);save();renderAll()}};
 col.appendChild(be);col.appendChild(bd);div.appendChild(col);box.appendChild(div);return}
 const btn=document.createElement("button");btn.className="cell"+(isDone?" done":"");
-btn.innerHTML=`<span class="dot" style="background:${COLORS[b.cat]}"></span><span class="check">${isDone?"✓":""}</span><span class="tinfo"><h3>${esc(b.title)}</h3><p>${esc(b.detail)}</p><span class="ttime">${b.start} – ${b.end} • ${b.mins} min</span> <span class="pill" style="background:${COLORS[b.cat]}22;color:${COLORS[b.cat]==="#FFCC00"?"#8a6d00":COLORS[b.cat]}">${NAMES[b.cat]}</span>${b.timer?` <span class="pill tpill" style="background:#007AFF1A;color:#007AFF">${b.timer} min</span>`:""}${isNow?` <span class="pill" style="background:#34C75922;color:#248A3D">AHORA</span>`:""}</span><span class="chev">›</span>`;
+btn.innerHTML=`<span class="dot" style="background:${COLORS[b.cat]}"></span><span class="check">${isDone?"✓":""}</span><span class="tinfo"><h3>${esc(b.title)}</h3><p>${esc(b.title==="Entrenamiento Club"?encoHoy():b.detail)}</p><span class="ttime">${b.start} – ${b.end} • ${b.mins} min</span> <span class="pill" style="background:${COLORS[b.cat]}22;color:${COLORS[b.cat]==="#FFCC00"?"#8a6d00":COLORS[b.cat]}">${NAMES[b.cat]}</span>${b.timer?` <span class="pill tpill" style="background:#007AFF1A;color:#007AFF">${b.timer} min</span>`:""}${isNow?` <span class="pill" style="background:#34C75922;color:#248A3D">AHORA</span>`:""}</span><span class="chev">›</span>`;
 btn.onclick=(e)=>{
 if(b.timer && e.target.closest(".tpill")){openTimer(b.timer,b.title);return}
 if(e.target.closest(".check")){toggleDone(b,i,key,arr);return}
@@ -435,6 +541,7 @@ document.getElementById("btnResetAll").onclick=()=>{if(confirm("¿Borrar puntos,
 function openBlockForm(idx){editBIdx=idx;const a=schedFor(cur);const b=idx>=0?a[idx]:{start:"08:00",end:"09:00",title:"",detail:"",cat:"basket",timer:0};
 document.getElementById("bfS").value=b.start||"08:00";document.getElementById("bfE").value=b.end||"09:00";document.getElementById("bfT").value=b.title||"";document.getElementById("bfD").value=b.detail||"";document.getElementById("bfC").value=b.cat||"basket";document.getElementById("bfM").value=b.timer||"";
 document.getElementById("blockForm").style.display="";document.getElementById("blockFormBtns").style.display="flex"}
+document.getElementById("btnOpts").onclick=()=>{const o=document.getElementById("dayOpts");const show=o.style.display==="none";o.style.display=show?"":"none";document.getElementById("btnOpts").textContent=show?"Ocultar":"Opciones"};
 document.getElementById("btnEditDay").onclick=()=>{editDay=!editDay;document.getElementById("blockForm").style.display="none";document.getElementById("blockFormBtns").style.display="none";document.getElementById("btnEditDay").textContent=editDay?"Listo":"Editar horario";document.getElementById("dayEditBtns").style.display=editDay?"flex":"none";renderList()};
 document.getElementById("btnAddB").onclick=()=>openBlockForm(-1);
 document.getElementById("bfCancel").onclick=()=>{document.getElementById("blockForm").style.display="none";document.getElementById("blockFormBtns").style.display="none"};
@@ -469,8 +576,9 @@ function openTimer(m,n){document.getElementById("timerModal").style.display="gri
 document.getElementById("tStart").onclick=()=>{if(tInt)return;const Ctx=new (window.AudioContext||window.webkitAudioContext)();tInt=setInterval(()=>{tSec--;document.getElementById("timerTime").textContent=fmt(Math.max(0,tSec));if(tSec<=0){clearInterval(tInt);tInt=null;store.pts+=15;save();renderStats();try{const o=Ctx.createOscillator(),g=Ctx.createGain();o.connect(g);g.connect(Ctx.destination);o.start();g.gain.setValueAtTime(.3,Ctx.currentTime);o.stop(Ctx.currentTime+.8)}catch(e){}alert("¡Tiempo! +15 pts.")}},1000)};
 document.getElementById("tPause").onclick=()=>{clearInterval(tInt);tInt=null};
 document.getElementById("tClose").onclick=()=>{document.getElementById("timerModal").style.display="none";clearInterval(tInt);tInt=null};
-const MOTS=["“Los bases no nacen, se construyen a las 6 AM.”","“El mejor base es el que mejor lee.”","“15 min de bote diario superan 3 horas un día.”","“Un día a la vez rumbo a ser el mejor de México.”","“Disciplina sobre motivación.”"];
-document.getElementById("motBox").textContent=MOTS[new Date().getDate()%MOTS.length];
+const MOTS=["Los bases no nacen, se construyen a las 6 AM.","El mejor base es el que mejor lee.","15 min de bote diario superan 3 horas un día.","Un día a la vez rumbo a ser el mejor de México.","Disciplina sobre motivación.","Cabeza arriba, balón abajo.","El pase a tiempo vale más que el pase bonito.","Defiende cada posesión como si fuera la última.","Un base habla: comunica en defensa.","La constancia le gana al talento cuando el talento descansa.","Hoy mejora 1% en algo.","Los tiros libres se ganan entre semana.","El error se olvida en la siguiente jugada.","Entrena cansado, juega fresco.","El desayuno también es entrenamiento.","Dormir 9 horas es entrenar en silencio.","Agradece a mamá con hechos: come todo.","Estudia al rival antes del partido.","Un líder llega primero y se va al último.","Respeta al coach, aplica al instante.","Cuenta tus tiros, sube tu porcentaje.","La izquierda se entrena todos los días.","El crossover empieza en los pies.","Vende la finta con los ojos.","Pasa y corta, no te quedes parado.","El rebote del base vale doble.","Corre el contraataque con la cabeza arriba.","Frena en seco y decide.","El pick and roll se lee antes de usarlo.","Espera al grande, luego decide.","El pase picado no lo intercepta nadie.","Triple de esquina: pies listos.","La flotadora salva al bajito.","Bandeja con las dos manos.","El tiro se repite hasta que sale solo.","Calienta en serio aunque sea lunes.","Estira hoy para volar mañana.","Tiende tu cama, ordena tu mente.","La tarea temprano, el basket tranquilo.","Visualiza el partido en el camino.","Respira antes del tiro importante.","La presión es un privilegio.","Juega feliz, compite serio.","Si duele, dilo: los valientes avisan.","Recupera con agua y estiramiento.","El domingo se descansa sin culpa.","El sábado se compite.","El viernes se pule el tiro.","Cada asistencia es un regalo.","Cero pérdidas es partido perfecto.","Cuida el balón como tu tesoro.","Protege con el cuerpo, no con miedo.","Ataca el aro con decisión.","Saca la falta y mete el libre.","Lee el mismatch y atácalo.","Pide el cambio y castiga.","El grande lento no te alcanza.","Corre sin balón y aparecerás solo.","Corta por detrás de la defensa.","El pase de béisbol abre partidos.","Mira antes de pasar.","Finta una, pasa otra.","El no-look se gana con práctica.","Escucha los pasos del defensa.","Siente el juego, no lo persigas.","El base pone el ritmo.","Acelera y frena a tu antojo.","Tranquiliza cuando van perdiendo.","Enciende cuando van ganando.","Grita, aplaude, contagia.","El mejor base hace mejores a otros.","Tu número se gana entrenando.","México tiene base para rato.","Juega por tu familia.","Juega por tu equipo.","Juega por ti.","El sacrificio de hoy es el trofeo de mañana.","Nadie te regala nada: gánalo.","El gimnasio premia a los constantes.","La duela respeta a los humildes.","Aprende de cada derrota.","Festeja cada victoria con humildad.","Vuelve mañana, el basket espera.","Sé coachable: corrige al instante.","Pide feedback después de entrenar.","Anota qué mejoraste hoy.","El progreso se mide en libreta.","Pequeñas victorias, gran base.","La paciencia también anota.","90 días seguidos te transforman."];
+const _hoy=new Date();const _doy=Math.floor((_hoy-new Date(_hoy.getFullYear(),0,0))/864e5);
+document.getElementById("motBox").textContent=MOTS[_doy%MOTS.length];
 renderAll();
 </script>
 </body>
