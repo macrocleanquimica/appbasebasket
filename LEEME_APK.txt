@@ -1,0 +1,33 @@
+CÓMO OBTENER TU APK (app real, sin navegador)
+===============================================
+Tiempo estimado: 15 min. Costo: $0.
+
+PASO 1 - Sube el proyecto a GitHub
+1. Crea cuenta gratis en github.com
+2. Crea un repositorio NUEVO (ej: base-elite), SIN marcar "Add a README"
+3. Sube TODO el contenido de esta carpeta (incluye android/, www/,
+   package.json, capacitor.config.json y .github/)
+   - Opción fácil: en la página del repo > "uploading an existing file" >
+     arrastra todos los archivos y carpetas > Commit.
+
+PASO 2 - Compila el APK en la nube
+1. En tu repo ve a la pestaña "Actions" > acepta activarlos si lo pide.
+2. Verás el workflow "Build APK" corriendo (o dale a "Run workflow").
+3. Espera 3-5 min a que termine en verde.
+
+PASO 3 - Descarga e instala
+1. Clic en la ejecución terminada > baja a "Artifacts" >
+   descarga "base-elite-apk" (un .zip con el .apk dentro).
+2. Pásalo al celular por WhatsApp/USB y ábrelo.
+3. Android pedirá "permitir instalar apps desconocidas" > permitir.
+4. Listo: icono "Base Élite", abre directo como app real,
+   funciona sin internet y sin Chrome.
+
+NOTAS
+- Es un APK de prueba (firma debug): sirve perfecto para uso
+  familiar. Si un día la quieres publicar en Play Store se firma
+  en modo release (avísame y lo preparamos).
+- Cada vez que cambies algo en www/index.html, súbelo al repo
+  y se genera un APK nuevo automáticamente.
+- NO edites la carpeta android/ a mano; todo cambio visual se
+  hace en www/index.html y luego: npx cap sync android
