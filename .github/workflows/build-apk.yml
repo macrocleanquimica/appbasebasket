@@ -21,7 +21,9 @@ jobs:
 
       - name: Setup Android SDK
         run: |
-          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null
+          mkdir -p "$ANDROID_HOME/licenses"
+          printf '8933bad161af4178b1185d1a37fbf41ea5269c' > "$ANDROID_HOME/licenses/android-sdk-license"
+          printf 'd56f5187479451eabfb336dd4c4c4f680ab' > "$ANDROID_HOME/licenses/android-sdk-preview-license"
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platform-tools" "platforms;android-35" "build-tools;35.0.0"
 
       - run: npm ci
