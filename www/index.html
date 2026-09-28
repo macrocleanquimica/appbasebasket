@@ -16,7 +16,7 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro Display',system-ui,sans-serif;background:var(--bg);color:var(--txt);padding-bottom:110px;-webkit-font-smoothing:antialiased}
 /* iOS Nav Bar */
-header{position:sticky;top:0;z-index:20;background:rgba(242,242,247,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:.5px solid #C6C6C8;padding:10px 16px calc(8px + env(safe-area-inset-top));padding-top:calc(10px + env(safe-area-inset-top))}
+header{position:sticky;top:0;z-index:20;background:rgba(242,242,247,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:.5px solid #C6C6C8;padding:8px 16px calc(6px + env(safe-area-inset-top));padding-top:calc(8px + env(safe-area-inset-top))}
 .navsmall{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--mut);font-weight:600}
 .navsmall button{background:none;border:none;color:var(--blue);font-size:13px;font-weight:600;padding:4px 0;cursor:pointer;font-family:inherit}
 .largetitle{font-size:23px;font-weight:800;letter-spacing:-.5px;margin:2px 0 4px;text-align:center;cursor:pointer}
@@ -28,7 +28,7 @@ header{position:sticky;top:0;z-index:20;background:rgba(242,242,247,.85);backdro
 .w b{display:block;font-size:15px}
 .w span{font-size:10px;color:var(--mut);font-weight:600}
 /* Segmented days iOS */
-.days{display:flex;gap:6px;justify-content:safe center;margin-top:6px;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:none}
+.days{display:flex;gap:6px;justify-content:safe center;margin-top:4px;overflow-x:auto;padding:2px;scrollbar-width:none}
 .days::-webkit-scrollbar{display:none}
 .daybtn{flex:none;min-width:46px;border:none;background:var(--card);border-radius:12px;padding:6px 8px;box-shadow:0 1px 3px #0001;cursor:pointer;text-align:center}
 .daybtn b{display:block;font-size:13px}
@@ -36,8 +36,8 @@ header{position:sticky;top:0;z-index:20;background:rgba(242,242,247,.85);backdro
 .daybtn.active{background:var(--txt);color:#fff}
 .daybtn.active small{color:#fff}
 /* Grouped list */
-main{max-width:600px;margin:0 auto;padding:12px 14px}
-.secTitle{font-size:13px;text-transform:uppercase;color:var(--mut);font-weight:700;margin:14px 4px 6px;letter-spacing:.3px}
+main{max-width:600px;margin:0 auto;padding:6px 10px}
+.secTitle{font-size:13px;text-transform:uppercase;color:var(--mut);font-weight:700;margin:8px 4px 4px;letter-spacing:.3px}
 .group{background:var(--card);border-radius:16px;overflow:hidden;box-shadow:0 1px 4px #0001}
 .cell{display:flex;gap:12px;align-items:center;padding:12px 12px;border-bottom:.5px solid #E5E5EA;background:#fff;text-align:left;width:100%;border-left:none;border-right:none;border-top:none;font-family:inherit;cursor:pointer}
 .cell:last-child{border-bottom:none}
@@ -51,7 +51,7 @@ main{max-width:600px;margin:0 auto;padding:12px 14px}
 .ttime{font-size:12px;color:var(--mut);font-weight:600}
 .chev{color:#C7C7CC;font-size:18px}
 .pill{font-size:11px;font-weight:800;padding:3px 8px;border-radius:99px;margin-top:4px;display:inline-block}
-.live{background:#fff;border-radius:16px;padding:12px;margin:10px 0;box-shadow:0 1px 4px #0001;border-left:5px solid var(--green);font-size:14px}
+.live{background:#fff;border-radius:16px;padding:10px 12px;margin:6px 0;box-shadow:0 1px 4px #0001;border-left:5px solid var(--green);font-size:14px}
 .progress{background:var(--card);border-radius:12px;padding:8px 10px;box-shadow:0 1px 4px #0001}
 .bar{height:5px;background:#E5E5EA;border-radius:99px;overflow:hidden;margin-top:5px}
 .bar i{display:block;height:100%;width:0;background:var(--blue);transition:width .3s}
@@ -443,7 +443,7 @@ async function quitaAvisoJuego(g){const ln=LN();if(!ln||!g||!g.notif)return;try{
 function save(){localStorage.setItem("baseEliteMX",JSON.stringify(store))}
 function ptsFor(b){return b.cat==="basket"?20:10}
 function toMin(t){const[a,b]=t.split(":").map(Number);return a*60+b}
-function renderDays(){const el=document.getElementById("days");el.innerHTML="";const dn=["L","M","X","J","V","S","D"];DAYS.forEach((d,i)=>{const b=document.createElement("button");b.className="daybtn"+(d===cur?" active":"");b.innerHTML=`<small>${dn[i]}</small><b>${d.slice(0,3)}</b>`;b.onclick=()=>{cur=d;renderAll()};el.appendChild(b)})}
+function renderDays(){const el=document.getElementById("days");el.innerHTML="";DAYS.forEach((d)=>{const b=document.createElement("button");b.className="daybtn"+(d===cur?" active":"");b.innerHTML=`<b>${d.slice(0,3)}</b>`;b.onclick=()=>{cur=d;renderAll()};el.appendChild(b)})}
 const GUIDES={
 "Despertar y aseo personal":{p:["Siéntate y haz 3 respiraciones profundas.","Toma un vaso de agua.","Lava cara y dientes, tiende tu cama.","Di en voz alta tu objetivo del día."],t:"Sin celular los primeros 5 minutos: el enfoque se entrena desde que despiertas.",e:"“Hoy no pierdo el balón con la izquierda.”"},
 "Estiramientos + movilidad":{p:["Tobillos: 10 círculos por lado.","Rodillas y cadera: sentadilla suave + apertura, 30 seg.","Hombros y muñecas: círculos, 30 seg.","Cierra con 30 seg de plancha."],t:"Movilidad sin dolor: si algo duele, avisa a papá o al coach.",e:"Hazlo con música de 3 min para no aburrirte."},
