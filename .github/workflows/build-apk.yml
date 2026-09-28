@@ -28,15 +28,45 @@ jobs:
 
       - run: npm ci
       - run: npx cap add android
+      - run: npx capacitor-assets generate --android
       - run: npx cap sync android
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - name: Build debug APK
+      - name: Firmar release
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_B64 }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          KEY_PASS: ${{ secrets.KEY_PASS }}
+        run: |
+          echo "$KEYSTORE_B64" | base64 -d > android/base-elite-key.p12
+          python3 - <<'PYEOF'
+          import os
+          p = 'android/app/build.gradle'
+          s = open(p).read()
+          s = s.replace('versionCode 1', 'versionCode ' + os.environ['GITHUB_RUN_NUMBER'])
+          s = s.replace('versionName "1.0"', 'versionName "1.0.' + os.environ['GITHUB_RUN_NUMBER'] + '"')
+          sign = ("    signingConfigs {\n        release {\n            storeFile file('../base-elite-key.p12')\n"
+                  "            storePassword System.getenv('KEYSTORE_PASS')\n"
+                  "            keyAlias System.getenv('KEY_ALIAS')\n"
+                  "            keyPassword System.getenv('KEY_PASS')\n"
+                  "            storeType 'PKCS12'\n        }\n    }\n")
+          assert '    buildTypes {' in s
+          s = s.replace('    buildTypes {', sign + '    buildTypes {', 1)
+          old = "    buildTypes {\n        release {\n            minifyEnabled false"
+          new = "    buildTypes {\n        release {\n            signingConfig signingConfigs.release\n            minifyEnabled false"
+          assert old in s
+          s = s.replace(old, new, 1)
+          open(p, 'w').write(s)
+          print('build.gradle firmado, versionCode=' + os.environ['GITHUB_RUN_NUMBER'])
+          PYEOF
+
+      - name: Build release APK
         timeout-minutes: 20
-        run: cd android && chmod +x gradlew && ./gradlew assembleDebug --console=plain
+        run: cd android && chmod +x gradlew && ./gradlew assembleRelease --console=plain
 
       - uses: actions/upload-artifact@v4
         with:
           name: base-elite-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          path: android/app/build/outputs/apk/release/app-release.apk

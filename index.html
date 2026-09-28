@@ -54,6 +54,7 @@ main{max-width:600px;margin:0 auto;padding:12px 14px}
 .bar{height:8px;background:#E5E5EA;border-radius:99px;overflow:hidden;margin-top:8px}
 .bar i{display:block;height:100%;width:0;background:var(--blue);transition:width .3s}
 .ibtn{border:none;border-radius:12px;padding:9px 12px;font-weight:700;font-size:13px;cursor:pointer}
+button:disabled{opacity:.5;color:var(--mut)!important;cursor:default}
 .ibtn-blue{background:#007AFF1A;color:var(--blue)}
 .ibtn-orange{background:#FF95001A;color:#C26A00}
 .ibtn-gray{background:#F2F2F7;color:var(--blue)}
@@ -80,6 +81,14 @@ section.view{display:none}section.view.active{display:block}
 #dSteps li{margin-bottom:6px}
 #dCustom{width:100%;border:none;background:#F2F2F7;border-radius:10px;padding:10px;font-size:14px;font-family:inherit;color:var(--txt);resize:vertical}
 #dCustom:focus{outline:2px solid var(--blue)}
+#exportModal{position:fixed;inset:0;background:#0005;display:none;place-items:end center;z-index:60}
+#backupModal{position:fixed;inset:0;background:#0005;display:none;place-items:end center;z-index:60}
+#welcomeModal{position:fixed;inset:0;background:#0b1220ee;display:none;place-items:center;z-index:70;padding:20px}
+#welcomeBox{background:#fff;border-radius:20px;padding:22px 18px;width:100%;max-width:380px;text-align:center;max-height:86vh;overflow-y:auto}
+#exportBox{background:#fff;border-radius:20px 20px 0 0;padding:12px 16px calc(18px + env(safe-area-inset-bottom));width:100%;max-width:520px;max-height:86vh;overflow-y:auto}
+#expText{width:100%;border:none;background:#F2F2F7;border-radius:10px;padding:10px;font-size:12px;font-family:ui-monospace,monospace;color:var(--txt);resize:vertical}
+#buText,#reText{width:100%;border:none;background:#F2F2F7;border-radius:10px;padding:10px;font-size:11px;font-family:ui-monospace,monospace;color:var(--txt);resize:vertical}
+#ruP{flex:1;min-width:0;border:none;background:#F2F2F7;border-radius:10px;padding:9px 10px;font-size:14px;font-family:inherit;color:var(--txt);resize:vertical}
 .install{background:#fff;border-radius:16px;padding:12px;font-size:13px;margin:8px 0;box-shadow:0 1px 4px #0001}
 .frow{display:flex;align-items:center;gap:10px;padding:11px 12px;border-bottom:.5px solid #E5E5EA;background:#fff}
 .frow:last-child{border-bottom:none}
@@ -110,12 +119,14 @@ section.view{display:none}section.view.active{display:block}
 <section id="v-cal" class="view active">
 <div id="liveBox"></div>
 <div id="checkAlert"></div>
+<div id="gameAlert"></div>
 <div class="secTitle">Horario hora a hora</div>
 <div class="group" id="list"></div>
 <div class="row"><button class="ibtn ibtn-gray" id="btnOpts">Opciones</button></div>
 <div id="dayOpts" style="display:none">
 <div class="row"><button class="ibtn ibtn-gray" id="btnEditDay">Editar horario</button></div>
-<div class="row" id="dayEditBtns" style="display:none"><button class="ibtn ibtn-blue" id="btnAddB">Agregar bloque</button><button class="ibtn ibtn-gray" id="btnResetSched" style="color:var(--red)">Restablecer horario</button></div>
+<div class="row" id="dayEditBtns" style="display:none"><button class="ibtn ibtn-blue" id="btnAddB">Agregar bloque</button><button class="ibtn ibtn-gray" id="btnResetSched" style="color:var(--red)">Restablecer</button></div>
+<div class="row" id="dayCopyRow" style="display:none"><select id="copyDay" style="border:none;background:#F2F2F7;border-radius:10px;padding:9px 10px;font-size:14px;font-family:inherit"></select><button class="ibtn ibtn-blue" id="btnCopyDay">Copiar día</button></div>
 <div class="group" id="blockForm" style="display:none;margin-top:8px">
 <div class="frow"><label>Inicio</label><input id="bfS" type="time" value="08:00"></div>
 <div class="frow"><label>Fin</label><input id="bfE" type="time" value="09:00"></div>
@@ -123,6 +134,7 @@ section.view{display:none}section.view.active{display:block}
 <div class="frow"><label>Detalle</label><input id="bfD" maxlength="120" placeholder="Ej: 50 tiros de media"></div>
 <div class="frow"><label>Tipo</label><select id="bfC"><option value="basket">Base</option><option value="escuela">Escuela</option><option value="habito">Hábito</option><option value="comida">Comida</option><option value="descanso">Descanso</option></select></div>
 <div class="frow"><label>Timer (min)</label><input id="bfM" type="number" min="0" max="180" placeholder="0 = sin timer"></div>
+<div class="frow"><label>Vincular</label><select id="bfLink"><option value="">Solo texto</option></select></div>
 </div>
 <div class="row" id="blockFormBtns" style="display:none"><button class="ibtn ibtn-blue" id="bfSave">Guardar</button><button class="ibtn ibtn-gray" id="bfCancel">Cancelar</button></div>
 <div class="row"><button class="ibtn ibtn-gray" id="btnReset">Reiniciar día</button></div>
@@ -133,21 +145,117 @@ section.view{display:none}section.view.active{display:block}
 <div class="secTitle">Modo Base</div>
 <div class="rank" id="rankBox">Nivel: Novato</div>
 <div class="mot" id="focoBox">Enfoque de la semana: Bote</div>
-<div class="row"><button class="ibtn ibtn-gray" id="btnEditD">Editar</button><button class="ibtn ibtn-blue" id="btnAddD" style="display:none">Agregar</button></div>
+<div class="seg" id="baseTabs" style="margin-top:8px"><button data-t="sub-ej" class="on">Ejercicios</button><button data-t="sub-rut">Rutinas</button><button data-t="sub-ret">Retos</button></div>
+<div id="sub-ej">
+<div class="secTitle">Ejercicios con cronómetro</div>
 <div class="group" id="drills"></div>
+<div class="row"><button class="ibtn ibtn-blue" id="btnAddD" style="display:none">Agregar ejercicio</button></div>
 <div class="group" id="drillForm" style="display:none;margin-top:8px">
 <div class="frow"><label>Nombre</label><input id="dfT" maxlength="50" placeholder="Ej: Bote mano izquierda"></div>
 <div class="frow"><label>Detalle</label><input id="dfD" maxlength="120" placeholder="Ej: 3 series de 3 min"></div>
+<div class="frow"><label>Para qué sirve</label><input id="dfP" maxlength="140" placeholder="Ej: para no mirar el balón"></div>
 <div class="frow"><label>Minutos</label><input id="dfM" type="number" min="1" max="120" placeholder="15"></div>
 </div>
-<div class="row" id="drillFormBtns" style="display:none"><button class="ibtn ibtn-blue" id="dfSave">Guardar</button><button class="ibtn ibtn-gray" id="dfCancel">Cancelar</button></div>
+<div class="row" id="drillFormBtns" style="display:none"><button class="ibtn ibtn-blue" id="dfTimer">Iniciar timer</button><button class="ibtn ibtn-blue" id="dfSave">Guardar</button><button class="ibtn ibtn-gray" id="dfCancel">Cancelar</button><button class="ibtn ibtn-gray" id="dfDel" style="color:var(--red)">Eliminar</button></div>
+</div>
+<div id="sub-rut" style="display:none">
+<div class="secTitle">Rutinas sin cronómetro</div>
+<div class="group" id="rutinas"></div>
+<div class="row"><button class="ibtn ibtn-blue" id="btnAddU" style="display:none">Agregar rutina</button></div>
+<div class="group" id="rutForm" style="display:none;margin-top:8px">
+<div class="frow"><label>Nombre</label><input id="ruT" maxlength="50" placeholder="Ej: Comida principal"></div>
+<div class="frow"><label>Pasos</label><textarea id="ruP" rows="4" placeholder="Un paso por línea"></textarea></div>
+<div class="frow"><label>Recomendación</label><input id="ruTip" maxlength="140"></div>
+<div class="frow"><label>Ejemplo</label><input id="ruE" maxlength="140"></div>
+</div>
+<div class="row" id="rutFormBtns" style="display:none"><button class="ibtn ibtn-blue" id="ruSave">Guardar</button><button class="ibtn ibtn-gray" id="ruCancel">Cancelar</button><button class="ibtn ibtn-gray" id="ruDefault" style="color:var(--red)">Volver a original</button><button class="ibtn ibtn-gray" id="ruDel" style="color:var(--red)">Eliminar</button></div>
+</div>
+<div id="sub-ret" style="display:none">
+<div class="secTitle">Retos del coach</div>
+<div class="group" id="retos"></div>
+<div class="row"><button class="ibtn ibtn-blue" id="btnAddR" style="display:none">Agregar reto</button></div>
+<div class="group" id="retoForm" style="display:none;margin-top:8px">
+<div class="frow"><label>Reto</label><input id="rfT" maxlength="60" placeholder="Ej: 100 tiros libres en la semana"></div>
+<div class="frow"><label>Detalle</label><input id="rfD" maxlength="120" placeholder="Ej: 20 por día después del club"></div>
+<div class="frow"><label>Límite</label><input id="rfL" type="date"></div>
+<div class="frow"><label>Puntos</label><input id="rfP" type="number" min="5" max="100" placeholder="50"></div>
+<div class="frow"><label>Timer (min)</label><input id="rfM" type="number" min="0" max="120" placeholder="0 = sin timer"></div>
+</div>
+<div class="row" id="retoFormBtns" style="display:none"><button class="ibtn ibtn-blue" id="rfDone">Cumplir reto</button><button class="ibtn ibtn-blue" id="rfSave">Guardar</button><button class="ibtn ibtn-gray" id="rfCancel">Cancelar</button><button class="ibtn ibtn-gray" id="rfDel" style="color:var(--red)">Eliminar</button></div>
+</div>
+</section>
+<section id="v-juegos" class="view">
+<div class="secTitle">Próximos juegos</div>
+<div class="group" id="listProg"></div>
+<div class="row"><button class="ibtn ibtn-blue" id="btnAddG">Programar juego</button></div>
+<div class="group" id="gameForm" style="display:none;margin-top:8px">
+<div class="frow"><label>Rival</label><input id="gRival" maxlength="40" placeholder="Ej: Halcones"></div>
+<div class="frow"><label>Torneo</label><input id="gTorneo" maxlength="40" placeholder="Ej: Liga Municipal"></div>
+<div class="frow"><label>Fecha</label><input id="gFecha" type="date"></div>
+<div class="frow"><label>Hora</label><input id="gHora" type="time"></div>
+<div class="frow"><label>Lugar</label><input id="gLugar" maxlength="50" placeholder="Ej: Cancha norte"></div>
+<div class="frow"><label>Nota</label><input id="gNota" maxlength="80" placeholder="Ej: uniforme azul"></div>
+</div>
+<div class="row" id="gameFormBtns" style="display:none"><button class="ibtn ibtn-blue" id="gfSave">Guardar</button><button class="ibtn ibtn-gray" id="gfCancel">Cancelar</button></div>
+<div class="secTitle">Historial y promedios</div>
+<div class="rank" id="avgBox">Sin juegos registrados</div>
+<div class="group" id="listHist"></div>
+</section>
+<section id="v-juego" class="view">
+<div class="row" style="justify-content:flex-start"><button class="ibtn ibtn-gray" id="jBack">‹ Partidos</button></div>
+<div class="secTitle">Juego</div>
+<div class="seg" id="modeSeg" style="margin-bottom:8px"><button data-v="rapido" class="on">Rápido</button><button data-v="completo">Completo</button></div>
+<div class="group"><div class="cell"><span class="tinfo" id="jInfo"></span></div></div>
+<div class="secTitle">Resultado</div>
+<div class="group">
+<div class="frow"><label>Nosotros</label><input id="rEq" type="number" min="0" max="300"></div>
+<div class="frow"><label>Rival</label><input id="rRiv" type="number" min="0" max="300"></div>
+<div class="frow"><label>Mis minutos</label><input id="rMin" type="number" min="0" max="60"></div>
+</div>
+<div class="secTitle">Mis números</div>
+<div class="group">
+<div class="frow"><label>Puntos</label><input id="rPts" type="number" min="0"></div>
+<div class="frow"><label>Asistencias</label><input id="rAst" type="number" min="0"></div>
+<div class="frow" id="rRowReb"><label>Rebotes</label><input id="rReb" type="number" min="0"></div>
+<div class="frow" id="rRowRob"><label>Robos</label><input id="rRob" type="number" min="0"></div>
+<div class="frow" id="rRowBloq"><label>Bloqueos</label><input id="rBloq" type="number" min="0"></div>
+<div class="frow"><label>Pérdidas</label><input id="rPer" type="number" min="0"></div>
+<div class="frow" id="rRowFal"><label>Faltas</label><input id="rFal" type="number" min="0"></div>
+<div class="frow" id="rRowTc"><label>Tiro campo</label><input id="rTcm" type="number" min="0" placeholder="metidos"><input id="rTci" type="number" min="0" placeholder="intentos"></div>
+<div class="frow" id="rRowT3"><label>Triples</label><input id="rT3m" type="number" min="0" placeholder="metidos"><input id="rT3i" type="number" min="0" placeholder="intentos"></div>
+<div class="frow" id="rRowTl"><label>Libres</label><input id="rTlm" type="number" min="0" placeholder="metidos"><input id="rTli" type="number" min="0" placeholder="intentos"></div>
+</div>
+<div class="secTitle">Mi juego (1-5)</div>
+<div class="group">
+<div class="frow"><label>Esfuerzo</label><div class="seg" id="rEsf"><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">5</button></div></div>
+<div class="frow" id="rRowCom"><label>Comunicación</label><div class="seg" id="rCom"><button data-v="1">1</button><button data-v="2">2</button><button data-v="3">3</button><button data-v="4">4</button><button data-v="5">5</button></div></div>
+<div class="frow" id="rRowEnc"><label>Encomienda</label><select id="rEnc"><option value="">Elige…</option><option>Sí</option><option>Parcial</option><option>No</option></select></div>
+<div class="frow" id="rRowMejor"><label>Mejor jugada</label><input id="rMejor" maxlength="80"></div>
+<div class="frow" id="rRowMejorar"><label>A mejorar</label><input id="rMejorar" maxlength="80"></div>
+</div>
+<div class="mot" id="jDelta"></div>
+<div class="row"><button class="ibtn ibtn-blue" id="btnSaveR">Guardar resultado</button><button class="ibtn ibtn-gray" id="btnDelG" style="color:var(--red)">Eliminar</button></div>
 </section>
 <section id="v-logros" class="view">
 <div class="secTitle">Logros</div>
 <div class="rank"><span id="pts2">0</span> puntos totales</div>
 <div class="group" id="medals"></div>
+<div class="secTitle">Esta semana</div>
+<div class="group" id="medalsW"></div>
+<div class="secTitle">Juegos y hábitos</div>
+<div class="group" id="medalsG"></div>
 <div class="mot">100 pts = Promesa • 500 = Base Élite • 1500 = Orgullo MX • 3000 = Mejor Base MX<br>Racha = días al 100%. Dormir 9.5 h también es entrenar.</div>
+<div class="secTitle">Resumen de actividades</div>
+<div class="mot">Genera el texto día por día (Hoy, 7 o 30 días) con cumplimiento, check, juegos y prompt de coach, listo para copiar o compartir.</div>
+<div class="row"><button class="ibtn ibtn-blue" id="btnExport">Resumen para coaching</button></div>
 <div class="row"><button class="ibtn ibtn-gray" id="btnResetAll" style="color:var(--red)">Restablecer puntos y racha</button></div>
+<div class="row"><button class="ibtn ibtn-gray" id="btnBackup">Respaldar / restaurar datos</button></div>
+<div class="row"><button class="ibtn ibtn-gray" id="btnHist">Historial por fecha</button></div>
+<div id="histWrap" style="display:none">
+<div class="secTitle">Historial por fecha</div>
+<div class="row"><button class="ibtn ibtn-gray" id="histPrev">‹</button><input id="histFecha" type="date" style="border:none;background:#fff;border-radius:10px;padding:9px 10px;font-size:14px;font-family:inherit;box-shadow:0 1px 4px #0001"><button class="ibtn ibtn-gray" id="histNext">›</button></div>
+<div class="group" id="histBox" style="margin-top:8px"></div>
+</div>
 </section>
 <section id="v-perfil" class="view">
 <div class="secTitle">Perfil</div>
@@ -174,12 +282,14 @@ section.view{display:none}section.view.active{display:block}
 <div class="frow"><label>Mejorar mañana</label><input id="cNota" placeholder="Ej: bote izquierda" maxlength="60"></div>
 </div>
 <div class="row"><button class="ibtn ibtn-blue" id="btnSaveP">Guardar</button></div>
+<div class="mot">Los avisos (6:00 despertar, 14:10 bote y día de juego) suenan solo en la app instalada. Si aún usas el navegador, pon alarmas del cel a esas horas.</div>
 <div class="mot" id="pTip">Para mejorar diario a los 12 años lo que más suma: dormir 9-10 h, agua, 15 min de bote y contar tu porcentaje de tiro. Todo queda guardado en el cel.</div>
 </section>
 </main>
 <nav>
 <button data-v="v-cal" class="active">Calendario</button>
-<button data-v="v-base">Modo Base</button>
+<button data-v="v-base">Base</button>
+<button data-v="v-juegos">Juegos</button>
 <button data-v="v-logros">Logros</button>
 <button data-v="v-perfil">Perfil</button>
 </nav>
@@ -206,8 +316,49 @@ section.view{display:none}section.view.active{display:block}
 <div class="row">
 <button class="ibtn ibtn-blue" id="dTimer">Iniciar timer</button>
 <button class="ibtn ibtn-gray" id="dDone">Marcar hecho</button>
+<button class="ibtn ibtn-gray" id="dEditRut">Editar rutina</button>
 <button class="ibtn ibtn-gray" id="dClose">Cerrar</button>
 </div></div></div>
+<div id="exportModal"><div id="exportBox"><div class="grab"></div>
+<h2 style="margin:4px 0">Resumen para coaching</h2>
+<div class="frow"><label>Rango</label><select id="expRange"><option value="1">Hoy</option><option value="7" selected>Últimos 7 días</option><option value="30">Últimos 30 días</option></select></div>
+<textarea id="expText" rows="14" readonly placeholder="Aquí aparecerá el resumen…"></textarea>
+<div class="row">
+<button class="ibtn ibtn-blue" id="btnCopy">Copiar</button>
+<button class="ibtn ibtn-gray" id="btnShare">Compartir</button>
+<button class="ibtn ibtn-gray" id="btnCloseExp">Cerrar</button>
+</div></div></div>
+<div id="backupModal"><div id="exportBox"><div class="grab"></div>
+<h2 style="margin:4px 0">Respaldar datos</h2>
+<div class="secTitle">1. Copia tu respaldo</div>
+<textarea id="buText" rows="6" readonly placeholder="Aquí aparecerá tu respaldo…"></textarea>
+<div class="row"><button class="ibtn ibtn-blue" id="buCopy">Copiar respaldo</button></div>
+<div class="secTitle">2. Restaurar desde copia</div>
+<textarea id="reText" rows="6" placeholder="Pega aquí el texto del respaldo…"></textarea>
+<div class="row">
+<button class="ibtn ibtn-blue" id="buRestore">Restaurar</button>
+<button class="ibtn ibtn-gray" id="buClose">Cerrar</button>
+</div></div></div>
+<div id="welcomeModal"><div id="welcomeBox">
+<div class="wstep" id="wStep1">
+<div class="avatar" style="width:72px;height:72px;font-size:32px;margin:0 auto" id="wAvatar">B</div>
+<h2 style="margin:10px 0 4px">Tu plan de base élite</h2>
+<p style="font-size:14px;color:var(--mut)">¿Cómo te llamas, futuro base?</p>
+<div class="frow"><label>Nombre</label><input id="wNombre" maxlength="30" placeholder="Ej: Joel"></div>
+<div class="row"><button class="ibtn ibtn-blue" id="wNext1">Siguiente</button></div>
+</div>
+<div class="wstep" id="wStep2" style="display:none">
+<h2 style="margin:10px 0 4px">Marca tus bloques</h2>
+<p style="font-size:14px;color:#3A3A3C;line-height:1.5">Toca el <b>círculo</b> de cada bloque al terminarlo y suma puntos.<br>Toca la <b>tarjeta</b> para ver la guía paso a paso.</p>
+<div class="row"><button class="ibtn ibtn-gray" id="wBack2">Atrás</button><button class="ibtn ibtn-blue" id="wNext2">Siguiente</button></div>
+</div>
+<div class="wstep" id="wStep3" style="display:none">
+<h2 style="margin:10px 0 4px">Tus 5 pestañas</h2>
+<p style="font-size:14px;color:#3A3A3C;line-height:1.6"><b>Estrategia:</b> tu día hora por hora.<br><b>Base:</b> ejercicios, rutinas y retos.<br><b>Juegos:</b> programa y registra partidos.<br><b>Logros:</b> puntos, medallas e historial.<br><b>Perfil:</b> tus datos y check diario.</p>
+<div class="row"><button class="ibtn ibtn-gray" id="wBack3">Atrás</button><button class="ibtn ibtn-blue" id="wStart">Empezar</button></div>
+</div>
+<div id="wDots" style="text-align:center;font-size:12px;color:var(--mut);letter-spacing:4px;margin-top:6px">●○○</div>
+</div></div>
 <script>
 const COLORS={basket:"#FF9500",escuela:"#007AFF",habito:"#34C759",comida:"#FFCC00",descanso:"#AF52DE"};
 const NAMES={basket:"BASE",escuela:"ESCUELA",habito:"HÁBITO",comida:"COMIDA",descanso:"DESCANSO"};
@@ -235,10 +386,10 @@ Viernes:LV.map(b=>b.title.includes("Entrenamiento Club")?B("18:00","20:00","Tiro
 Sábado:[B("8:00","8:30","Despertar","Aseo + agua + desayuno.","habito",30),B("8:30","9:00","Bote 30 min","Rutina Modo Base.","basket",30,15),B("9:00","15:00","Libre / Familia","Juego libre, ayuda en casa.","descanso",360),B("15:00","15:45","Comida principal","Recarga bien.","comida",45),B("15:45","18:00","Tiro / Partido","Sábado = competir.","basket",135),B("20:00","20:40","Cena + baño","Rutina nocturna.","comida",40),B("20:40","20:55","Estiramientos","Recuperar.","descanso",15,15),B("21:30","6:00","Dormir 9.5h","Descanso de campeón.","descanso",510)],
 Domingo:[B("8:00","8:30","Despertar","Descanso activo.","habito",30),B("8:30","9:00","Bote suave","Solo técnica ligera.","basket",30,15),B("9:00","15:00","Descanso + familia","Recarga. Cero culpa.","descanso",360),B("15:00","15:45","Comida principal","En familia.","comida",45),B("15:45","20:00","Convivencia familiar","Mente fresca = mejor base.","descanso",255),B("20:00","20:40","Cena + baño","Rutina.","comida",40),B("21:30","6:00","Dormir 9.5h","Listo para el lunes Élite.","descanso",510)]};
 const DRILLS=[
-{t:"Rutina Bote Alta Intensidad",d:"3' derecha • 3' izquierda • 3' crossover • 3' behind back • 3' velocidad. Cabeza arriba.",m:15},
-{t:"Tiro de Base",d:"50 línea + 25 triples esquina + 25 media + 10 libres seguidos.",m:20},
-{t:"Básquet IQ",d:"1 video de base: ¿qué leyó? ¿qué pase eligió? ¿qué harías tú?",m:15},
-{t:"Movilidad + Core",d:"Tobillos, cadera, hombros + plancha 30” x3. Técnica, no pesas.",m:15}];
+{t:"Rutina Bote Alta Intensidad",d:"3' derecha • 3' izquierda • 3' crossover • 3' behind back • 3' velocidad. Cabeza arriba.",m:15,para:"Para no mirar el balón en los juegos: un base con la cabeza arriba ve a sus compañeros libres."},
+{t:"Tiro de Base",d:"50 línea + 25 triples esquina + 25 media + 10 libres seguidos.",m:20,para:"Para meter los tiros que el juego te da: si metes de fuera, el defensa sale y se abren tus pases."},
+{t:"Básquet IQ",d:"1 video de base: ¿qué leyó? ¿qué pase eligió? ¿qué harías tú?",m:15,para:"Para decidir bien y rápido en la duela: los puntos del base nacen de leer antes que los demás."},
+{t:"Movilidad + Core",d:"Tobillos, cadera, hombros + plancha 30” x3. Técnica, no pesas.",m:15,para:"Para no lesionarte y moverte suelto todo el partido: a los 12 años la técnica vale más que la fuerza."}];
 const DAYS=Object.keys(SCH);
 let cur=DAYS[(new Date().getDay()+6)%7]||"Lunes";if(!SCH[cur])cur="Lunes";
 const store=JSON.parse(localStorage.getItem("baseEliteMX")||'{"done":{},"pts":0,"racha":0,"rachaDays":[]}');
@@ -246,9 +397,50 @@ if(!store.profile)store.profile={nombre:"",nac:"",equipo:"",numero:"",mano:"",al
 if(!store.check)store.check={};
 if(!store.custom)store.custom={};
 if(!store.drills)store.drills=JSON.parse(JSON.stringify(DRILLS));
+if(!store.retos)store.retos=[];
+if(!store.rutinas)store.rutinas={};
+function titleCat(){const m={};Object.keys(SCH).forEach(d=>SCH[d].forEach(b=>{if(!(b.title in m))m[b.title]=b.cat}));return m}
+let editRIdx=-1;
+function diasRest(lim){if(!lim)return null;const ms=new Date(lim+"T12:00:00")-new Date(todayKey()+"T12:00:00");return Math.round(ms/864e5)}
+function renderRetos(){
+const box=document.getElementById("retos");if(!box)return;box.innerHTML="";
+const hoy=todayKey();
+const items=(store.retos||[]).map((r,idx)=>({r,idx})).sort((a,b)=>((a.r.hecho?1:0)-(b.r.hecho?1:0))||((a.r.limite||"9999")<(b.r.limite||"9999")?-1:1));
+if(!items.length)box.innerHTML=`<div class="cell"><span class="tinfo"><p>Sin retos. El coach puede agregar el primero.</p></span></div>`;
+items.forEach(({r,idx})=>{
+const rest=diasRest(r.limite);
+const pill=r.hecho?` <span class="pill" style="background:#34C75922;color:#248A3D">LOGRO ✓</span>`:(r.limite?(rest<0?` <span class="pill" style="background:#FF3B3022;color:#FF3B30">Vencido</span>`:` <span class="pill" style="background:#007AFF1A;color:#007AFF">${rest===0?"Hoy":rest+" días"}</span>`):"");
+const btn=document.createElement("button");btn.className="cell"+(r.hecho?" done":"");
+btn.innerHTML=`<span class="dot" style="background:#AF52DE"></span><span class="check">${r.hecho?"✓":""}</span><span class="tinfo"><h3>${esc(r.t)}</h3><p>${esc(r.d||"")}${r.limite?" • Límite "+esc(fmtF(r.limite)):""}</p><span class="pill" style="background:#AF52DE22;color:#AF52DE">+${+r.p||0} pts</span>${r.m?` <span class="pill tpill" style="background:#007AFF1A;color:#007AFF">${+r.m} min</span>`:""}${pill}</span><span class="chev">›</span>`;
+btn.onclick=(e)=>{if(r.m&&e.target.closest(".tpill")){openTimer(+r.m,r.t);return}openRetoForm(idx)};
+box.appendChild(btn)});
+document.getElementById("btnAddR").style.display=""}
+function openRetoForm(idx){editRIdx=idx;const r=idx>=0?store.retos[idx]:{t:"",d:"",limite:"",p:50,m:0};
+document.getElementById("rfT").value=r.t||"";document.getElementById("rfD").value=r.d||"";document.getElementById("rfL").value=r.limite||"";document.getElementById("rfP").value=r.p||50;document.getElementById("rfM").value=r.m||"";
+document.getElementById("retoForm").style.display="";document.getElementById("retoFormBtns").style.display="flex";document.getElementById("btnAddR").disabled=true;document.getElementById("rfDone").style.display=idx>=0?"":"none";document.getElementById("rfDel").style.display=idx>=0?"":"none"}
 if(!store.sched)store.sched={};
+if(!store.games)store.games=[];
+function gid(){return Date.now().toString(36)+Math.floor(Math.random()*99)}
+function gwd(fecha){return (new Date(fecha+"T12:00:00").getDay()+6)%7}
+function addH(h,mins){const p=h.split(":");let t=(+p[0])*60+(+p[1])+mins;return String(Math.floor(t/60)%24).padStart(2,"0")+":"+String(t%60).padStart(2,"0")}
+function pct(a,b){a=+a||0;b=+b||0;return b>0?Math.round(a/b*100):0}
+function WL(g){if(g.estado!=="jug")return"";const a=+g.eq||0,c=+g.riv||0;return a>c?"V":a<c?"D":"E"}
+function fmtF(f){if(!f)return"";const p=f.split("-");return p[2]+"/"+p[1]+"/"+p[0]}
+const OPTROWS=["rRowReb","rRowRob","rRowBloq","rRowFal","rRowTc","rRowT3","rRowTl","rRowCom","rRowEnc","rRowMejor","rRowMejorar"];
+function setGameMode(m){store.uiQuick=(m!=="completo");save();document.querySelectorAll("#modeSeg button").forEach(x=>x.classList.toggle("on",(m==="completo")===(x.dataset.v==="completo")));OPTROWS.forEach(id=>{const e=document.getElementById(id);if(e)e.style.display=(m==="completo")?"":"none"})}
+document.querySelectorAll("#modeSeg button").forEach(b=>b.onclick=()=>setGameMode(b.dataset.v));
+let curG=null;
 function schedFor(day){return (store.sched&&store.sched[day])||SCH[day]}
 let editDay=false,editBIdx=-1;
+function LN(){try{return window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.LocalNotifications||null}catch(e){return null}}
+async function setupAvisos(){const ln=LN();if(!ln)return false;try{const p=await ln.requestPermissions();if(p&&p.display&&p.display!=="granted")return false;
+await ln.schedule({notifications:[
+{id:1,title:"¡Arriba, futuro base!",body:"Tiende tu cama y desayuna de campeón.",schedule:{on:{hour:6,minute:0}},smallIcon:"ic_launcher"},
+{id:2,title:"Hora del bote",body:"15 minutos a full, cabeza arriba.",schedule:{on:{hour:14,minute:10}},smallIcon:"ic_launcher"}]});return true}catch(e){return false}}
+function gidNum(s){let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%7000;return 1000+h}
+async function avisoJuego(g){const ln=LN();if(!ln||!g.fecha||!g.hora)return;try{const d=new Date(g.fecha+"T"+g.hora+":00");d.setHours(d.getHours()-2);if(d<=new Date())return;
+const id=gidNum(g.id);await ln.cancel({notifications:[{id}]});await ln.schedule({notifications:[{id,title:"Hoy hay partido",body:"vs "+g.rival+" a las "+g.hora+". ¡A ganar!",schedule:{at:d},smallIcon:"ic_launcher"}]});g.notif=id;save()}catch(e){}}
+async function quitaAvisoJuego(g){const ln=LN();if(!ln||!g||!g.notif)return;try{await ln.cancel({notifications:[{id:g.notif}]})}catch(e){}}
 function save(){localStorage.setItem("baseEliteMX",JSON.stringify(store))}
 function ptsFor(b){return b.cat==="basket"?20:10}
 function toMin(t){const[a,b]=t.split(":").map(Number);return a*60+b}
@@ -273,8 +465,8 @@ const GUIDES={
 "Tiro / Partido":{p:["Calienta 5 min + 20 tiros cerca.","Juega aplicando 1 cosa de la semana.","Anota tu porcentaje o tu mejor jugada."],t:"El sábado se compite: juega a ganar cada posesión.",e:"“Hoy hice el crossover sin mirar el balón.”"},
 "Cena ligera + baño":{p:["Cena ligera, nada pesado.","Baño tibio para relajar.","Cuéntale a papá 1 mejora del día."],t:"Cenar pesado retrasa el sueño; cena 1 h antes de dormir."},
 "Cena + baño":{p:["Cena ligera en familia.","Baño tibio y a descansar."],t:"Rutina igual que entre semana: el cuerpo la agradece."},
-"Estiramientos nocturnos":{p:["Piernas y espalda suave, 10 min.","Respiración 4 seg inhala, 4 exhala, 5 veces.","Afloja cuello y hombros."],t:"Estirar de noche = amanecer sin tiesura."},
-"Estiramientos":{p:["Repite tu rutina suave de 15 min.","Respira lento al terminar."],t:"Recuperar también es entrenar."},
+"Estiramientos nocturnos":{p:["Cuádriceps: de pie agarrado de la pared, lleva el talón al glúteo 30 seg por pierna.","Isquios: sentado con una pierna estirada, inclínate a la punta del pie 30 seg por lado.","Pantorrilla: manos a la pared, pierna atrás con el talón pegado al piso 30 seg por lado.","Espalda gato-camello: en 4 puntos, arquea y redondea la espalda lento 10 veces.","Postura del niño 30 seg + respiración 4 inhala, 4 exhala x5.","Cuello y hombros: círculos suaves para aflojar."],t:"Sin rebotes ni dolor: estira hasta tensión cómoda, 30 seg por zona."},
+"Estiramientos":{p:["Repite 5 estiramientos de tu rutina nocturna, 30 seg cada uno.","Respiración 4 inhala, 4 exhala x5 para bajar pulsaciones."],t:"Recuperar también es entrenar."},
 "Desconexión total":{p:["Celular a cargar fuera del cuarto.","Prepara ropa y mochila de mañana.","Lee o dibuja 15 min."],t:"La pantalla antes de dormir roba 30 min de sueño."},
 "Dormir 9.5h":{p:["Luces apagadas a las 9:30.","Cuarto fresco y oscuro.","Si no duermes en 20 min, respira lento."],t:"Dormir es cuando creces y fijas lo aprendido."},
 "Despertar":{p:["Despierta sin prisa, aseo + agua.","Desayuna completo en familia."],t:"Fin de semana: recarga con calma."},
@@ -407,11 +599,34 @@ const REC=[
 "Día 89: deja la duela mejor de como la encontraste.",
 "Día 90: 90 días de club te hacen otro jugador."];
 function recHoy(){const n=new Date();return stripDia(REC[Math.floor((n-new Date(n.getFullYear(),0,0))/864e5)%REC.length])}
-const ENCO=["Comunica en defensa todo el entreno.","Cero pérdidas hoy.","Asiste más de lo que anotas.","Corre cada contraataque.","Manos activas en defensa.","Bloquea cada rebote con el cuerpo.","Pide una corrección al coach.","Llega 10 minutos antes.","Organiza en voz alta el 5 contra 5.","Nada de reclamos: corre a defender.","Cierra al tirador con mano arriba.","Pasa y corta siempre.","Ayuda y recupera.","Toma agua en cada pausa.","Pregunta qué hiciste mal hoy.","Defiende el pick con energía.","Ataca el closeout y decide.","Aplaude a tus compañeros.","Si fallas dos, asiste la tercera.","Postura defensiva todo el drill.","Escucha el drill antes de empezar.","Primero en cada fila.","Corrige con respeto.","Acepta correcciones sin caras.","Usa tu mano débil al calentar.","Grita cada cambio defensivo.","Niega el balón al mejor rival.","Balance defensivo en cada tiro.","Pide el balón en el momento clave.","Cierra con 10 libres seguidos.","No camines en la duela.","Recoge los balones al final.","Estira con el equipo.","Cuenta tus pérdidas de hoy.","Cuenta tus asistencias de hoy.","Cero faltas tontas.","Finta antes de penetrar.","Termina cada bandeja bien.","Reta al mejor del equipo.","Aprende una jugada nueva.","Ejecuta el sistema sin improvisar.","Observa y aprende desde la banca.","Mete tu primer tiro al entrar.","Niega el balón al poste.","Ayuda al grande y vuelve.","Corre la banda en transición.","Tira solo en equilibrio.","Nada de pases entre tres defensas.","Lleva toalla y agua siempre.","Amarra bien tus tenis.","Sé el más ruidoso animando.","Bote vivo, sin cargarlo.","Velocidad controlada al atacar.","Protege cada penetración.","Lee la ayuda antes de entrar.","Saca el pase al tirador.","Persigue cada balón suelto.","No discutas con el coach.","Ofrece tu ayuda al equipo.","Memoriza las jugadas nuevas.","Presiona el saque de banda.","Desmárcate cambiando de ritmo.","Pon cortinas duras.","Comunica el reloj al final."];
+const ENCO=["Comunica en defensa todo el entreno.","Cero pérdidas hoy.","Asiste más de lo que anotas.","Corre cada contraataque.","Manos activas en defensa.","Pide una corrección al coach.","Organiza en voz alta el 5 contra 5.","Nada de reclamos: corre a defender.","Cierra al tirador con mano arriba.","Pasa y corta siempre.","Ayuda y recupera.","Toma agua en cada pausa.","Pregunta qué hiciste mal hoy.","Defiende el pick con energía.","Ataca el closeout y decide.","Aplaude a tus compañeros.","Si fallas dos, asiste la tercera.","Postura defensiva todo el drill.","Escucha el drill antes de empezar.","Primero en cada fila.","Corrige con respeto.","Acepta correcciones sin caras.","Usa tu mano débil al calentar.","Grita cada cambio defensivo.","Niega el balón al mejor rival.","Balance defensivo en cada tiro.","Pide el balón en el momento clave.","Cierra con 10 libres seguidos.","No camines en la duela.","Recoge los balones al final.","Estira con el equipo.","Cuenta tus pérdidas de hoy.","Cuenta tus asistencias de hoy.","Cero faltas tontas.","Finta antes de penetrar.","Termina cada bandeja bien.","Reta al mejor del equipo.","Aprende una jugada nueva.","Ejecuta el sistema sin improvisar.","Observa y aprende desde la banca.","Niega el balón al poste.","Ayuda al grande y vuelve.","Corre la banda en transición.","Tira solo en equilibrio.","Nada de pases entre tres defensas.","Lleva toalla y agua siempre.","Sé el más ruidoso animando.","Bote vivo, sin cargarlo.","Velocidad controlada al atacar.","Protege cada penetración.","Lee la ayuda antes de entrar.","Saca el pase al tirador.","Persigue cada balón suelto.","No discutas con el coach.","Ofrece tu ayuda al equipo.","Memoriza las jugadas nuevas.","Presiona el saque de banda.","Desmárcate cambiando de ritmo.","Pon cortinas duras.","Comunica el reloj al final."];
 function encoHoy(){const n=new Date();return ENCO[Math.floor((n-new Date(n.getFullYear(),0,0))/864e5)%ENCO.length]}
-function getGuide(b){return GUIDES[b.title]||CATG[b.cat]||{p:[b.detail],t:"",e:""}}
+function getGuide(b){return (store.rutinas&&store.rutinas[b.title])||GUIDES[b.title]||CATG[b.cat]||{p:[b.detail],t:"",e:""}}
+let editRutT=null;
+function renderRutinas(){
+const box=document.getElementById("rutinas");if(!box)return;box.innerHTML="";
+const tc=titleCat();
+const titles=[...new Set([...Object.keys(GUIDES),...Object.keys(store.rutinas||{}),...Object.keys(store.custom||{})])].sort();
+if(!titles.length)box.innerHTML=`<div class="cell"><span class="tinfo"><p>Sin rutinas.</p></span></div>`;
+titles.forEach(t=>{
+const custom=(store.custom||{})[t]||[];const edit=(store.rutinas||{})[t];
+const cat=tc[t]||"habito";
+const dimmed=(editRutT!==null&&t!==editRutT);
+const badge=custom.length?` <span class="pill" style="background:#007AFF1A;color:#007AFF">Personal</span>`:edit?` <span class="pill" style="background:#AF52DE1A;color:#AF52DE">Editada</span>`:"";
+const inner=`<span class="dot" style="background:${COLORS[cat]||"#8E8E93"}"></span><span class="tinfo"><h3>${esc(t)}</h3><p>${esc((((edit||GUIDES[t]||{}).p)||[])[0]||"")}</p><span class="pill" style="background:${COLORS[cat]}22;color:${COLORS[cat]==="#FFCC00"?"#8a6d00":COLORS[cat]}">${NAMES[cat]}</span>${badge}</span>`;
+const btn=document.createElement("button");btn.className="cell";btn.disabled=dimmed;if(dimmed)btn.style.opacity=".45";
+btn.innerHTML=inner+`<span class="chev">›</span>`;
+btn.onclick=()=>openRutForm(t);box.appendChild(btn)});
+document.getElementById("btnAddU").style.display="";
+document.getElementById("btnAddU").disabled=(editRutT!==null)}
+function openRutForm(t){const g=(store.rutinas||{})[t]||GUIDES[t]||{p:[],t:"",e:""};
+editRutT=t||"__new__";
+const nt=document.getElementById("ruT");nt.value=t||"";nt.readOnly=!!t;
+document.getElementById("ruP").value=(g.p||[]).join("\n");
+document.getElementById("ruTip").value=g.t||"";document.getElementById("ruE").value=g.e||"";
+document.getElementById("rutForm").style.display="";document.getElementById("rutFormBtns").style.display="flex";document.getElementById("ruDel").style.display=(t&&!(t in GUIDES))?"":"none";renderRutinas()}
 let curD=null;
-function openDetail(b,i,key,arr){curD={b,i,key,arr};
+function openDetail(b,i,key,arr){const lk=linkOf(b);curD={b,i,key,arr,LD:lk.LD||null,LR:lk.LR||null};
 document.getElementById("dCat").innerHTML=`<span class="pill" style="background:${COLORS[b.cat]}22;color:${COLORS[b.cat]==="#FFCC00"?"#8a6d00":COLORS[b.cat]}">${NAMES[b.cat]}</span>`;
 document.getElementById("dTitle").textContent=b.title;
 document.getElementById("dTime").textContent=`${b.start} – ${b.end} • ${b.mins} min`;
@@ -420,7 +635,8 @@ const g=getGuide(b);
 const ej=(b.title==="Salida a secundaria")?visuHoy():g.e;
 const custom=(store.custom||{})[b.title]||[];
 const locked=b.title==="Entrenamiento Club";
-document.getElementById("dSteps").innerHTML=(custom.length&&!locked?custom.map(esc):g.p).map(s=>`<li>${s}</li>`).join("");
+const steps=(custom.length&&!locked)?custom.map(esc):(curD.LD?[esc(curD.LD.t+" ("+(+curD.LD.m||0)+" min)"),esc(curD.LD.d||"")]:g.p);
+document.getElementById("dSteps").innerHTML=steps.map(s=>`<li>${s}</li>`).join("");
 document.getElementById("dCustom").value=custom.join("\n");
 document.getElementById("dCustom").style.display=locked?"none":"";
 document.getElementById("dSaveCustom").style.display=locked?"none":"";
@@ -428,8 +644,13 @@ document.getElementById("dCustomTitle").style.display=locked?"none":"";
 const ejLabel=b.title==="Salida a secundaria"?"Visualización de hoy":"Ejemplo";
 let tipHtml=(g.t?`<b>Recomendación:</b> ${esc(g.t)}`:"")+(ej?`<br><b>${ejLabel}:</b> ${esc(ej)}`:"");
 if(locked)tipHtml+=`<br><b>Recomendación de hoy:</b> ${esc(recHoy())}`;
+if(curD.LD)tipHtml+=`<br><b>Ejercicio vinculado:</b> ${esc(curD.LD.t)}${curD.LD.para?" — "+esc(curD.LD.para):""}`;
+if(curD.LR)tipHtml+=`<br><b>Reto vinculado:</b> ${esc(curD.LR.t)} (+${+curD.LR.p||0} pts)${curD.LR.hecho?" ✓":""}`;
 document.getElementById("dTip").innerHTML=tipHtml;
-const dt=document.getElementById("dTimer");dt.style.display=b.timer?"":"none";if(b.timer)dt.textContent=`Iniciar timer ${b.timer} min`;
+const dt=document.getElementById("dTimer");
+if(curD.LR&&!curD.LR.hecho){dt.style.display="";dt.textContent=`Cumplir reto +${+curD.LR.p||0}`}
+else if(curD.LD){dt.style.display="";dt.textContent=`Iniciar timer ${+curD.LD.m||0} min`}
+else{dt.style.display=b.timer?"":"none";if(b.timer)dt.textContent=`Iniciar timer ${b.timer} min`}
 updDoneBtn();
 document.getElementById("detailModal").style.display="grid"}
 function updDoneBtn(){if(!curD)return;const done=(store.done[curD.key]||[]).includes(curD.i);document.getElementById("dDone").textContent=done?"Hecho ✓":"Marcar hecho"}
@@ -447,13 +668,17 @@ const isDone=done.includes(i);let isNow=false;
 if(cur===DAYS[(new Date().getDay()+6)%7]){try{const s=toMin(b.start),e=b.end.includes(":")?toMin(b.end):s+60;if(nowM>=s&&nowM<e){isNow=true;live=b}}catch(e){}}
 if(editDay){
 const div=document.createElement("div");div.className="cell";
+const dimmed=(editBIdx>=0&&editBIdx!==i);
+if(dimmed)div.style.opacity=".45";
 div.innerHTML=`<span class="dot" style="background:${COLORS[b.cat]||"#8E8E93"}"></span><span class="tinfo"><h3>${esc(b.title)}</h3><p>${esc(b.detail)}</p><span class="ttime">${esc(b.start)} – ${esc(b.end)} • ${b.mins} min</span></span>`;
 const col=document.createElement("span");col.style.display="flex";col.style.gap="6px";col.style.flex="none";
-const be=document.createElement("button");be.className="ibtn ibtn-gray";be.textContent="Editar";be.onclick=()=>openBlockForm(i);
-const bd=document.createElement("button");bd.className="ibtn ibtn-gray";bd.style.color="var(--red)";bd.textContent="X";bd.onclick=()=>{if(confirm("¿Eliminar este bloque?")){if(!store.sched[cur])store.sched[cur]=JSON.parse(JSON.stringify(SCH[cur]));store.sched[cur].splice(i,1);save();renderAll()}};
+const be=document.createElement("button");be.className="ibtn ibtn-gray";be.textContent="Editar";be.disabled=dimmed;be.onclick=()=>openBlockForm(i);
+const bd=document.createElement("button");bd.className="ibtn ibtn-gray";bd.style.color="var(--red)";bd.textContent="X";bd.disabled=dimmed;bd.onclick=()=>{if(confirm("¿Eliminar este bloque?")){if(!store.sched[cur])store.sched[cur]=JSON.parse(JSON.stringify(SCH[cur]));store.sched[cur].splice(i,1);save();renderAll()}};
 col.appendChild(be);col.appendChild(bd);div.appendChild(col);box.appendChild(div);return}
+const lk=linkOf(b);
+const lkPill=lk.LD?` <span class="pill" style="background:#AF52DE1A;color:#AF52DE">↗ ${esc(lk.LD.t)}</span>`:lk.LR?` <span class="pill" style="background:#AF52DE1A;color:#AF52DE">Reto: ${esc(lk.LR.t)}</span>`:"";
 const btn=document.createElement("button");btn.className="cell"+(isDone?" done":"");
-btn.innerHTML=`<span class="dot" style="background:${COLORS[b.cat]}"></span><span class="check">${isDone?"✓":""}</span><span class="tinfo"><h3>${esc(b.title)}</h3><p>${esc(b.title==="Entrenamiento Club"?encoHoy():b.detail)}</p><span class="ttime">${b.start} – ${b.end} • ${b.mins} min</span> <span class="pill" style="background:${COLORS[b.cat]}22;color:${COLORS[b.cat]==="#FFCC00"?"#8a6d00":COLORS[b.cat]}">${NAMES[b.cat]}</span>${b.timer?` <span class="pill tpill" style="background:#007AFF1A;color:#007AFF">${b.timer} min</span>`:""}${isNow?` <span class="pill" style="background:#34C75922;color:#248A3D">AHORA</span>`:""}</span><span class="chev">›</span>`;
+btn.innerHTML=`<span class="dot" style="background:${COLORS[b.cat]}"></span><span class="check">${isDone?"✓":""}</span><span class="tinfo"><h3>${esc(b.title)}</h3><p>${esc(b.title==="Entrenamiento Club"?encoHoy():b.detail)}</p><span class="ttime">${b.start} – ${b.end} • ${b.mins} min</span> <span class="pill" style="background:${COLORS[b.cat]}22;color:${COLORS[b.cat]==="#FFCC00"?"#8a6d00":COLORS[b.cat]}">${NAMES[b.cat]}</span>${b.timer?` <span class="pill tpill" style="background:#007AFF1A;color:#007AFF">${b.timer} min</span>`:""}${lkPill}${isNow?` <span class="pill" style="background:#34C75922;color:#248A3D">AHORA</span>`:""}</span><span class="chev">›</span>`;
 btn.onclick=(e)=>{
 if(b.timer && e.target.closest(".tpill")){openTimer(b.timer,b.title);return}
 if(e.target.closest(".check")){toggleDone(b,i,key,arr);return}
@@ -467,7 +692,7 @@ document.getElementById("sPct").textContent=pct+"%";
 document.getElementById("liveBox").innerHTML=live?`<div class="live"><b>Ahora:</b> ${live.title} <span style="color:var(--mut)">(${live.start}–${live.end})</span></div>`:"";
 }
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
-let editD=false,editIdx=-1;
+let editIdx=-1;
 function renderDrills(){
 const box=document.getElementById("drills");box.innerHTML="";
 const foco=(store.profile&&store.profile.foco)||"Bote";
@@ -478,29 +703,130 @@ const fb=document.getElementById("focoBox");if(fb)fb.textContent="Enfoque de la 
 const items=(store.drills||[]).map((d,idx)=>({d,idx})).sort((a,b2)=>((isFoco(b2.d)?1:0)-(isFoco(a.d)?1:0)));
 items.forEach(({d,idx})=>{
 const badge=isFoco(d)?` <span class="pill" style="background:#34C75922;color:#248A3D">ENFOQUE</span>`:"";
-if(editD){
-const div=document.createElement("div");div.className="cell";
-div.innerHTML=`<span class="dot" style="background:#FF9500"></span><span class="tinfo"><h3>${esc(d.t)}</h3><p>${esc(d.d)}</p><span class="pill" style="background:#007AFF1A;color:#007AFF">${+d.m||0}:00</span>${badge}</span>`;
-const col=document.createElement("span");col.style.display="flex";col.style.gap="6px";col.style.flex="none";
-const be=document.createElement("button");be.className="ibtn ibtn-gray";be.textContent="Editar";be.onclick=()=>openDrillForm(idx);
-const bd=document.createElement("button");bd.className="ibtn ibtn-gray";bd.style.color="var(--red)";bd.textContent="X";bd.onclick=()=>{if(confirm("¿Eliminar este ejercicio?")){store.drills.splice(idx,1);save();renderDrills()}};
-col.appendChild(be);col.appendChild(bd);div.appendChild(col);box.appendChild(div);
-}else{
 const btn=document.createElement("button");btn.className="cell";
-btn.innerHTML=`<span class="dot" style="background:#FF9500"></span><span class="tinfo"><h3>${esc(d.t)}</h3><p>${esc(d.d)}</p><span class="pill" style="background:#007AFF1A;color:#007AFF">${+d.m||0}:00</span>${badge}</span><span class="chev">›</span>`;
-btn.onclick=()=>openTimer(+d.m||5,d.t);box.appendChild(btn)}});
-document.getElementById("btnAddD").style.display=editD?"":"none";
-document.getElementById("btnEditD").textContent=editD?"Listo":"Editar"}
-function openDrillForm(idx){editIdx=idx;const d=idx>=0?store.drills[idx]:{t:"",d:"",m:15};
-document.getElementById("dfT").value=d.t||"";document.getElementById("dfD").value=d.d||"";document.getElementById("dfM").value=d.m||15;
-document.getElementById("drillForm").style.display="";document.getElementById("drillFormBtns").style.display="flex"}
+btn.innerHTML=`<span class="dot" style="background:#FF9500"></span><span class="tinfo"><h3>${esc(d.t)}</h3><p>${esc(d.d)}</p>${d.para?`<p><b>Para qué sirve:</b> ${esc(d.para)}</p>`:""}<span class="pill" style="background:#007AFF1A;color:#007AFF">${+d.m||0}:00</span>${badge}</span><span class="chev">›</span>`;
+btn.onclick=()=>openDrillForm(idx);box.appendChild(btn)});
+document.getElementById("btnAddD").style.display="";
+document.getElementById("btnAddR").style.display="";}
+function openDrillForm(idx){editIdx=idx;const d=idx>=0?store.drills[idx]:{t:"",d:"",m:15,para:""};
+document.getElementById("dfT").value=d.t||"";document.getElementById("dfD").value=d.d||"";document.getElementById("dfM").value=d.m||15;document.getElementById("dfP").value=d.para||"";
+document.getElementById("drillForm").style.display="";document.getElementById("drillFormBtns").style.display="flex";document.getElementById("btnAddD").disabled=true;document.getElementById("dfDel").style.display=idx>=0?"":"none"}
+function medalCell(t,d,a,m){const ok=a>=m;return `<div class="cell"><span class="tinfo"><h3>${t} ${ok?"✓":""}</h3><p>${d} • ${ok?"Completada":a+"/"+m}</p></span></div>`}
+function lastIsos(n){const a=[];const t=new Date();for(let i=0;i<n;i++){const d=new Date(t);d.setDate(t.getDate()-i);a.push(d.toISOString().slice(0,10))}return a}
+function wdOf(iso){return DAYS[(new Date(iso+"T12:00:00").getDay()+6)%7]}
+function dayFull(iso){const wd=wdOf(iso);const arr=schedFor(wd);const done=(store.done||{})[wd+"_"+iso]||[];return arr.length>0&&done.length>=arr.length}
+function weekPts(){return lastIsos(7).reduce((s,iso)=>{const wd=wdOf(iso);const arr=schedFor(wd);const done=(store.done||{})[wd+"_"+iso]||[];return s+done.reduce((s2,i)=>s2+(arr[i]?ptsFor(arr[i]):0),0)},0)}
+function checkFilled(iso){const c=(store.check||{})[iso]||{};return !!(c.sueno||c.agua||c.animo)}
+function checkStreak(){let n=0;for(let i=0;i<60;i++){const d=new Date();d.setDate(d.getDate()-i);if(checkFilled(d.toISOString().slice(0,10)))n++;else{if(n===0&&i===0)continue;break}}return n}
+function lastSat(){for(let i=0;i<7;i++){const d=new Date();d.setDate(d.getDate()-i);const iso=d.toISOString().slice(0,10);if(wdOf(iso)==="Sábado")return iso}return null}
 function renderStats(){
 document.getElementById("sPts").textContent=store.pts;document.getElementById("sRacha").textContent=store.racha;document.getElementById("pts2").textContent=store.pts;
-let n="Novato";if(store.pts>=3000)n="Mejor Base MX";else if(store.pts>=1500)n="Orgullo MX";else if(store.pts>=500)n="Base Élite";else if(store.pts>=100)n="Base Promesa";
-document.getElementById("rankBox").textContent="Nivel: "+n;
-const med=[["Primera misión",10],["Racha x3",()=>store.racha>=3],["500 pts Élite",500],["1500 pts Orgullo",1500],["3000 pts Leyenda",3000]];
-document.getElementById("medals").innerHTML=med.map(m=>{let ok=typeof m[1]==="function"?m[1]():(store.pts>=m[1]);return `<div class="cell"><span class="tinfo"><h3>${m[0]} ${ok?"✓":""}</h3></span></div>`}).join("")}
-function renderAll(){renderDays();renderList();renderDrills();renderStats();renderProfile();renderCheckAlert()}
+let nv="Novato",nx=null;const NIV=[[0,"Novato"],[1000,"Base Promesa"],[4000,"Base Élite"],[10000,"Orgullo MX"],[20000,"Mejor Base MX"]];
+for(let k=0;k<NIV.length;k++){if(store.pts>=NIV[k][0])nv=NIV[k][1];else{nx=NIV[k];break}}
+document.getElementById("rankBox").textContent="Nivel: "+nv+(nx?` • Te faltan ${nx[0]-store.pts} pts para ${nx[1]}`:" • ¡Nivel máximo!");
+const med=[
+{t:"Primera misión",d:"Marca tu primer bloque como hecho",a:Math.min(store.pts,10),m:10},
+{t:"Racha x3",d:"Completa 3 días al 100%",a:Math.min(store.racha,3),m:3},
+{t:"Base Élite",d:"Suma 4000 puntos entrenando",a:Math.min(store.pts,4000),m:4000},
+{t:"Orgullo MX",d:"Suma 10000 puntos",a:Math.min(store.pts,10000),m:10000},
+{t:"Mejor Base MX",d:"Suma 20000 puntos",a:Math.min(store.pts,20000),m:20000}];
+document.getElementById("medals").innerHTML=med.map(m=>medalCell(m.t,m.d,m.a,m.m)).join("");
+const full7=lastIsos(7).filter(dayFull).length;const wp=weekPts();const sat=lastSat();const cs=checkStreak();
+document.getElementById("medalsW").innerHTML=[
+{t:"Semana fuerte",d:"5 días al 100% en 7 días",a:Math.min(full7,5),m:5},
+{t:"+300 en la semana",d:"Suma 300 puntos en 7 días",a:Math.min(wp,300),m:300},
+{t:"Fin de campeón",d:"Sábado al 100%",a:(sat&&dayFull(sat))?1:0,m:1}
+].map(m=>medalCell(m.t,m.d,m.a,m.m)).join("");
+const jug=(store.games||[]).filter(g=>g.estado==="jug");
+const best=k=>jug.reduce((m,g)=>Math.max(m,+g[k]||0),0);
+const sj=[...jug].sort((a,b)=>((a.fecha||"")+(a.hora||""))<((b.fecha||"")+(b.hora||""))?1:-1);
+let ws=0;for(const g of sj){if(WL(g)==="V")ws++;else break}
+document.getElementById("medalsG").innerHTML=[
+{t:"Debut",d:"Juega tu primer partido",a:Math.min(jug.length,1),m:1},
+{t:"Anotador",d:"15+ puntos en un juego",a:Math.min(best("pts"),15),m:15},
+{t:"Mago",d:"8+ asistencias en un juego",a:Math.min(best("ast"),8),m:8},
+{t:"Candado",d:"Termina un juego sin pérdidas",a:jug.some(g=>(+g.per||0)===0)?1:0,m:1},
+{t:"Racha ganadora x2",d:"Gana 2 juegos seguidos",a:Math.min(ws,2),m:2},
+{t:"Check 7 seguidos",d:"Llena el check 7 días seguidos",a:Math.min(cs,7),m:7}
+].map(m=>medalCell(m.t,m.d,m.a,m.m)).join("")}
+function renderGames(){
+const gs=store.games||[];const hoy=todayKey();
+const prog=gs.filter(g=>g.estado!=="jug").sort((a,b)=>((a.fecha||"")+(a.hora||""))>((b.fecha||"")+(b.hora||""))?1:-1);
+const jug=gs.filter(g=>g.estado==="jug").sort((a,b)=>((a.fecha||"")+(a.hora||""))<((b.fecha||"")+(b.hora||""))?1:-1);
+const lp=document.getElementById("listProg");
+lp.innerHTML=prog.length?prog.map(g=>`<button class="cell" onclick="openGame('${g.id}')"><span class="dot" style="background:#FF9500"></span><span class="tinfo"><h3>vs ${esc(g.rival)}${g.fecha===hoy?` <span class="pill" style="background:#34C75922;color:#248A3D">HOY</span>`:""}</h3><p>${esc(fmtF(g.fecha))} • ${esc(g.hora||"")}${g.lugar?" • "+esc(g.lugar):""}${g.torneo?" • "+esc(g.torneo):""}</p></span><span class="chev">›</span></button>`).join(""):`<div class="cell"><span class="tinfo"><p>Sin juegos programados.</p></span></div>`;
+const lh=document.getElementById("listHist");
+lh.innerHTML=jug.length?jug.map(g=>{const w=WL(g);return `<button class="cell" onclick="openGame('${g.id}')"><span class="dot" style="background:${w==="V"?"#34C759":w==="D"?"#FF3B30":"#8E8E93"}"></span><span class="tinfo"><h3>${w} ${(g.eq===""||g.eq==null?"–":g.eq)}-${(g.riv===""||g.riv==null?"–":g.riv)} vs ${esc(g.rival)}</h3><p>${esc(fmtF(g.fecha))} • ${+g.pts||0} pts • ${+g.ast||0} ast • ${+g.per||0} pér • %TC ${pct(g.tcm,g.tci)}</p></span><span class="chev">›</span></button>`}).join(""):`<div class="cell"><span class="tinfo"><p>Sin historial todavía.</p></span></div>`;
+const ab=document.getElementById("avgBox");
+if(!jug.length){ab.textContent="Sin juegos registrados"}
+else{const n=jug.length,S=k=>jug.reduce((s,g)=>s+(+g[k]||0),0);const v=jug.filter(g=>WL(g)==="V").length;
+ab.innerHTML=`JJ ${n} • ${v}V-${jug.filter(g=>WL(g)==="D").length}D<br><span style="font-size:13px">PPJ ${(S("pts")/n).toFixed(1)} • APJ ${(S("ast")/n).toFixed(1)} • RPJ ${(S("reb")/n).toFixed(1)} • %TC ${pct(S("tcm"),S("tci"))} • Pér ${(S("per")/n).toFixed(1)}</span>`}}
+function renderGameAlert(){const box=document.getElementById("gameAlert");if(!box)return;const hoy=todayKey();
+const gs=(store.games||[]).filter(g=>g.estado!=="jug"&&g.fecha===hoy).sort((a,b)=>a.hora>b.hora?1:-1);
+box.innerHTML=gs.length?gs.map(g=>`<button class="cell" onclick="openGame('${g.id}')" style="border-left:5px solid var(--orange);margin-top:8px"><span class="tinfo"><h3>Hoy hay partido vs ${esc(g.rival)} • ${esc(g.hora||"")}</h3><p>${esc(g.lugar||"")}${g.lugar&&g.torneo?" • ":""}${esc(g.torneo||"")}</p></span><span class="chev">›</span></button>`).join(""):""}
+function openGame(id){curG=id;const g=(store.games||[]).find(x=>x.id===id);if(!g)return;
+document.getElementById("jInfo").innerHTML=`<h3>vs ${esc(g.rival)}</h3><p>${g.torneo?esc(g.torneo)+" • ":""}${esc(fmtF(g.fecha))} • ${esc(g.hora||"")}${g.lugar?" • "+esc(g.lugar):""}${g.nota?"<br>"+esc(g.nota):""}</p>`;
+const K={Eq:"eq",Riv:"riv",Min:"min",Pts:"pts",Ast:"ast",Reb:"reb",Rob:"rob",Bloq:"bloq",Per:"per",Tcm:"tcm",Tci:"tci",T3m:"t3m",T3i:"t3i",Tlm:"tlm",Tli:"tli",Fal:"faltas"};
+Object.keys(K).forEach(f=>{const v=g[K[f]];document.getElementById("r"+f).value=(v===""||v==null)?"":v});
+document.querySelectorAll("#rEsf button").forEach(b=>b.classList.toggle("on",String(g.esf||"")===b.dataset.v));
+document.querySelectorAll("#rCom button").forEach(b=>b.classList.toggle("on",String(g.com||"")===b.dataset.v));
+document.getElementById("rEnc").value=g.enc||"";
+document.getElementById("rMejor").value=g.mejor||"";document.getElementById("rMejorar").value=g.mejorar||"";
+document.getElementById("btnSaveR").textContent=g.estado==="jug"?"Actualizar resultado":"Guardar resultado";
+const prev=(store.games||[]).filter(x=>x.estado==="jug"&&x.id!==id&&((x.fecha||"")+(x.hora||""))<((g.fecha||"")+(g.hora||""))).sort((a,b)=>((a.fecha||"")+(a.hora||""))<((b.fecha||"")+(b.hora||""))?1:-1)[0];
+let dH="";
+if(g.estado==="jug"&&prev){const dd=(k,l)=>{const d=(+g[k]||0)-(+prev[k]||0);return l+" "+(d>0?"+":"")+d};
+dH=`<b>vs anterior (${esc(prev.rival)}):</b> ${dd("pts","Pts")}, ${dd("ast","Ast")}, ${dd("per","Pér")}, %TC ${pct(g.tcm,g.tci)} (antes ${pct(prev.tcm,prev.tci)})`}
+else if(g.estado==="jug"){dH="Primer partido registrado. A construir historia."}
+else{dH="Llena el resultado al terminar el juego."}
+document.getElementById("jDelta").innerHTML=dH;
+setGameMode(store.uiQuick===false?"completo":"rapido");
+document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById("v-juego").classList.add("active");document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));window.scrollTo(0,0)}
+function isoDays(n){const a=[];const t=new Date();for(let i=n-1;i>=0;i--){const d=new Date(t);d.setDate(t.getDate()-i);a.push(d)}return a}
+function isoOf(d){return d.toISOString().slice(0,10)}
+function dayLabel(iso){const p=(iso||"").split("-");return p.length===3?p[2]+"/"+p[1]+"/"+p[0]:""}
+function genExport(n){
+const p=store.profile||{};const first=((p.nombre||"").trim().split(" ")[0])||"El jugador";
+const edad=calcEdad(p.nac)||"12 años";
+const days=isoDays(n);let totB=0,totD=0,totP=0;
+let out=`RESUMEN BASE ÉLITE – ${first}, ${edad} (Base)\nEnfoque: ${p.foco||"Bote"} • Racha: ${store.racha||0} días • Puntos totales: ${store.pts||0}\nRango: ${dayLabel(isoOf(days[0]))} al ${dayLabel(isoOf(days[days.length-1]))}\n`;
+days.forEach(d=>{
+const iso=isoOf(d),wd=DAYS[(d.getDay()+6)%7];const arr=schedFor(wd);
+const done=store.done[wd+"_"+iso]||[];
+const pts=done.reduce((s,i)=>s+(arr[i]?ptsFor(arr[i]):0),0);
+totB+=arr.length;totD+=done.length;totP+=pts;
+out+=`\n${wd.toUpperCase()} ${dayLabel(iso)} – ${done.length}/${arr.length} bloques, +${pts} pts\n`;
+const hechos=done.map(i=>arr[i]?arr[i].title:null).filter(Boolean);
+out+=`Realizó: ${hechos.length?hechos.join("; "):"nada registrado"}\n`;
+const pend=arr.filter((_,i)=>done.indexOf(i)<0).map(b=>b.title);
+if(pend.length)out+=`Pendiente: ${pend.join("; ")}\n`;
+const c=(store.check||{})[iso]||{};
+if(c.sueno||c.agua||c.animo||c.nota||c.estado)out+=`Check: durmió ${c.sueno||"?"} h, agua ${c.agua||"?"} vasos, ánimo ${c.animo||"?"}/5, estado: ${c.estado||"?"}. Nota: ${c.nota||"—"}\n`;
+(store.games||[]).filter(g=>g.fecha===iso).forEach(g=>{
+out+=g.estado==="jug"?`Juego: ${WL(g)} ${g.eq===""||g.eq==null?"?":g.eq}-${g.riv===""||g.riv==null?"?":g.riv} vs ${g.rival} – ${+g.pts||0} pts, ${+g.ast||0} ast, ${+g.reb||0} reb, ${+g.per||0} pér, %TC ${pct(g.tcm,g.tci)}. Mejor: ${g.mejor||"—"}. A mejorar: ${g.mejorar||"—"}\n`:`Juego programado: vs ${g.rival} ${g.hora||""}\n`})});
+const gj=(store.games||[]).filter(g=>g.estado==="jug"&&g.fecha>=isoOf(days[0])&&g.fecha<=isoOf(days[days.length-1]));
+if(gj.length){const n2=gj.length,S=k=>gj.reduce((s,g)=>s+(+g[k]||0),0);
+out+=`\nPROMEDIOS (${n2} juegos): PPJ ${(S("pts")/n2).toFixed(1)}, APJ ${(S("ast")/n2).toFixed(1)}, RPJ ${(S("reb")/n2).toFixed(1)}, %TC ${pct(S("tcm"),S("tci"))}, Pér ${(S("per")/n2).toFixed(1)}\n`}
+const ra=(store.retos||[]).filter(r=>!r.hecho);
+if(ra.length)out+=`\nRetos activos del coach: ${ra.map(r=>r.t+(r.limite?" (límite "+dayLabel(r.limite)+")":"")).join("; ")}\n`;
+const adh=totB?Math.round(totD/totB*100):0;
+out+=`\nAdherencia total: ${totD}/${totB} (${adh}%), +${totP} pts en el rango.\n`;
+out+=`\n--- PROMPT PARA LA IA ---\nActúa como coach de baloncesto infantil. El jugador tiene ${edad}, juega de base y quiere ser el mejor base de México. Con los datos de arriba analiza: 1) adherencia y constancia, 2) equilibrio escuela-entreno-descanso (objetivo dormir 9.5 h), 3) rendimiento en juegos y qué mejorar puesto por puesto. Dime qué mantener, qué mejorar y qué reducir, más 3 acciones concretas para la próxima semana. Sé breve, directo y motivador, con lenguaje para un niño de 12 años y su papá.`;
+return out}
+function renderHist(){const inp=document.getElementById("histFecha");if(!inp)return;if(!inp.value)inp.value=todayKey();let iso=inp.value;if(iso>todayKey()){iso=todayKey();inp.value=iso}
+const d=new Date(iso+"T12:00:00");const wd=DAYS[(d.getDay()+6)%7];const arr=schedFor(wd);
+const done=(store.done||{})[wd+"_"+iso]||[];
+const box=document.getElementById("histBox");
+let h=`<div class="cell"><span class="tinfo"><h3>${wd} ${dayLabel(iso)} — ${done.length}/${arr.length} bloques</h3></span></div>`;
+h+=arr.map((b,i)=>{const ok=done.indexOf(i)>=0;return `<div class="cell"${ok?"":' style="opacity:.55"'}><span class="dot" style="background:${COLORS[b.cat]||"#8E8E93"}"></span><span class="tinfo"><h3>${ok?"✓ ":""}${esc(b.title)}</h3><p>${esc(b.start)} – ${esc(b.end)}</p></span></div>`}).join("");
+const c=(store.check||{})[iso]||{};
+if(c.sueno||c.agua||c.animo||c.nota||c.estado)h+=`<div class="cell"><span class="tinfo"><h3>Check del día</h3><p>Durmió ${esc(c.sueno||"?")} h • Agua ${esc(c.agua||"?")} • Ánimo ${esc(c.animo||"?")}/5 • ${esc(c.estado||"")}${c.nota?" • Nota: "+esc(c.nota):""}</p></span></div>`;
+(store.games||[]).filter(g=>g.fecha===iso).forEach(g=>{h+=`<div class="cell"><span class="tinfo"><h3>${g.estado==="jug"?WL(g)+" "+(g.eq===""||g.eq==null?"?":g.eq)+"-"+(g.riv===""||g.riv==null?"?":g.riv)+" vs "+esc(g.rival):"Programado vs "+esc(g.rival)}</h3><p>${+g.pts||0} pts • ${+g.ast||0} ast • ${+g.reb||0} reb • %TC ${pct(g.tcm,g.tci)}</p></span></div>`});
+box.innerHTML=h}
+function moveHist(n){const inp=document.getElementById("histFecha");const d=new Date(((inp.value||todayKey()))+"T12:00:00");d.setDate(d.getDate()+n);let iso=d.toISOString().slice(0,10);if(iso>todayKey())iso=todayKey();inp.value=iso;renderHist()}
+function ensureIds(){[...(store.drills||[]),...(store.retos||[])].forEach(x=>{if(x&&!x.id)x.id=gid()})}
+function linkOf(b){if(!b||!b.link)return{};if(b.link.k==="d")return{LD:(store.drills||[]).find(x=>x.id===b.link.id)};return{LR:(store.retos||[]).find(x=>x.id===b.link.id)}}
+function renderAll(){ensureIds();renderDays();renderList();renderDrills();renderRetos();renderRutinas();renderStats();renderProfile();renderCheckAlert();renderGames();renderGameAlert();renderHist()}
 function goTab(id){document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));const b=document.querySelector(`nav button[data-v="${id}"]`);if(b)b.classList.add("active");document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo({top:0,behavior:"smooth"})}
 function renderCheckAlert(){
 const box=document.getElementById("checkAlert");if(!box)return;
@@ -527,24 +853,39 @@ function saveProfile(){
 store.profile={nombre:document.getElementById("fNombre").value.trim(),nac:document.getElementById("fNac").value,equipo:document.getElementById("fEquipo").value.trim(),numero:document.getElementById("fNumero").value,mano:document.getElementById("fMano").value,altura:document.getElementById("fAltura").value,peso:document.getElementById("fPeso").value,foco:document.getElementById("fFoco").value,meta:document.getElementById("fMeta").value.trim()};
 const an=document.querySelector("#cAnimo button.on");
 store.check[todayKey()]={sueno:document.getElementById("cSueno").value,agua:document.getElementById("cAgua").value,animo:an?an.dataset.v:"",estado:document.getElementById("cEstado").value,nota:document.getElementById("cNota").value.trim()};
-save();renderAll();
+save();setupAvisos();renderAll();
 const tip=document.getElementById("pTip");tip.textContent="Guardado. "+(store.profile.meta||"Vamos por esa meta.")+" Enfoque: "+store.profile.foco+".";
 if(navigator.vibrate)navigator.vibrate(10)}
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById(b.dataset.v).classList.add("active")});
 document.getElementById("dDone").onclick=()=>{if(curD){toggleDone(curD.b,curD.i,curD.key,curD.arr);updDoneBtn()}};
-document.getElementById("dTimer").onclick=()=>{if(curD){document.getElementById("detailModal").style.display="none";openTimer(curD.b.timer,curD.b.title)}};
+document.getElementById("dTimer").onclick=()=>{if(!curD)return;
+if(curD.LR){const r=curD.LR;if(r.hecho)return;if(confirm(`¿Completaste "${r.t}"? +${+r.p||0} pts`)){r.hecho=1;store.pts+=+r.p||0;if(navigator.vibrate)navigator.vibrate(20);save();renderAll();openDetail(curD.b,curD.i,curD.key,curD.arr)}return}
+const m=curD.LD?+curD.LD.m||5:curD.b.timer;document.getElementById("detailModal").style.display="none";openTimer(m,curD.LD?curD.LD.t:curD.b.title)};
 document.getElementById("dSaveCustom").onclick=()=>{if(!curD)return;const lines=document.getElementById("dCustom").value.split("\n").map(s=>s.trim()).filter(s=>s);store.custom[curD.b.title]=lines;save();document.getElementById("dSteps").innerHTML=(lines.length?lines.map(esc):getGuide(curD.b).p).map(s=>`<li>${s}</li>`).join("");if(navigator.vibrate)navigator.vibrate(10)};
+function baseTab(t){document.querySelectorAll("#baseTabs button").forEach(x=>x.classList.toggle("on",x.dataset.t===t));["sub-ej","sub-rut","sub-ret"].forEach(id=>document.getElementById(id).style.display=id===t?"":"none")}
+document.querySelectorAll("#baseTabs button").forEach(b=>b.onclick=()=>baseTab(b.dataset.t));
+document.getElementById("dEditRut").onclick=()=>{if(!curD)return;const t=curD.b.title;document.getElementById("detailModal").style.display="none";goTab("v-base");baseTab("sub-rut");openRutForm(t)};
 document.getElementById("dClose").onclick=()=>{document.getElementById("detailModal").style.display="none"};
 document.getElementById("btnHoy").onclick=()=>{cur=DAYS[(new Date().getDay()+6)%7]||"Lunes";renderAll()};
 document.getElementById("btnReset").onclick=()=>{if(confirm("¿Reiniciar "+cur+"?")){delete store.done[cur+"_"+new Date().toISOString().slice(0,10)];save();renderAll()}};
-document.getElementById("btnResetAll").onclick=()=>{if(confirm("¿Borrar puntos, racha y avance? Es para empezar de cero.")){const prof=store.profile,chk=store.check,cus=store.custom,dri=store.drills,sch=store.sched;localStorage.removeItem("baseEliteMX");store.done={};store.pts=0;store.racha=0;store.rachaDays=[];store.profile=prof;store.check=chk;store.custom=cus;store.drills=dri;store.sched=sch;save();renderAll()}};
+document.getElementById("btnResetAll").onclick=()=>{if(confirm("¿Borrar puntos, racha y avance? Es para empezar de cero.")){const prof=store.profile,chk=store.check,cus=store.custom,dri=store.drills,sch=store.sched,gam=store.games,ret=store.retos,rut=store.rutinas,seen=store.seen;localStorage.removeItem("baseEliteMX");store.done={};store.pts=0;store.racha=0;store.rachaDays=[];store.profile=prof;store.check=chk;store.custom=cus;store.drills=dri;store.sched=sch;store.games=gam;store.retos=ret;store.rutinas=rut;store.seen=seen;save();renderAll()}};
 function openBlockForm(idx){editBIdx=idx;const a=schedFor(cur);const b=idx>=0?a[idx]:{start:"08:00",end:"09:00",title:"",detail:"",cat:"basket",timer:0};
 document.getElementById("bfS").value=b.start||"08:00";document.getElementById("bfE").value=b.end||"09:00";document.getElementById("bfT").value=b.title||"";document.getElementById("bfD").value=b.detail||"";document.getElementById("bfC").value=b.cat||"basket";document.getElementById("bfM").value=b.timer||"";
-document.getElementById("blockForm").style.display="";document.getElementById("blockFormBtns").style.display="flex"}
+ensureIds();
+const sel=document.getElementById("bfLink");
+sel.innerHTML=`<option value="">Solo texto</option><optgroup label="Ejercicios">`+(store.drills||[]).map(d=>`<option value="d:${d.id}">${esc(d.t)}</option>`).join("")+`</optgroup><optgroup label="Retos">`+(store.retos||[]).filter(r=>!r.hecho).map(r=>`<option value="r:${r.id}">${esc(r.t)}</option>`).join("")+`</optgroup>`;
+sel.value=b.link?(b.link.k+":"+b.link.id):"";
+document.getElementById("blockForm").style.display="";document.getElementById("blockFormBtns").style.display="flex";renderList()}
 document.getElementById("btnOpts").onclick=()=>{const o=document.getElementById("dayOpts");const show=o.style.display==="none";o.style.display=show?"":"none";document.getElementById("btnOpts").textContent=show?"Ocultar":"Opciones"};
-document.getElementById("btnEditDay").onclick=()=>{editDay=!editDay;document.getElementById("blockForm").style.display="none";document.getElementById("blockFormBtns").style.display="none";document.getElementById("btnEditDay").textContent=editDay?"Listo":"Editar horario";document.getElementById("dayEditBtns").style.display=editDay?"flex":"none";renderList()};
+document.getElementById("btnEditDay").onclick=()=>{editDay=!editDay;editBIdx=-1;document.getElementById("blockForm").style.display="none";document.getElementById("blockFormBtns").style.display="none";document.getElementById("btnEditDay").textContent=editDay?"Listo":"Editar horario";document.getElementById("dayEditBtns").style.display=editDay?"flex":"none";document.getElementById("dayCopyRow").style.display=editDay?"flex":"none";if(editDay){document.getElementById("copyDay").innerHTML=DAYS.filter(d=>d!==cur).map(d=>`<option>${d}</option>`).join("")}renderList()};
+document.getElementById("btnCopyDay").onclick=()=>{const src=document.getElementById("copyDay").value;if(!src)return;
+if(!confirm(`¿Reemplazar el horario del ${cur} con el del ${src}? Se borrará el avance de hoy.`))return;
+const clone=JSON.parse(JSON.stringify(schedFor(src))).map(b=>{delete b.gameId;return b});
+if(!store.sched)store.sched={};store.sched[cur]=clone;
+delete store.done[cur+"_"+new Date().toISOString().slice(0,10)];
+save();renderList()};
 document.getElementById("btnAddB").onclick=()=>openBlockForm(-1);
-document.getElementById("bfCancel").onclick=()=>{document.getElementById("blockForm").style.display="none";document.getElementById("blockFormBtns").style.display="none"};
+document.getElementById("bfCancel").onclick=()=>{editBIdx=-1;document.getElementById("blockForm").style.display="none";document.getElementById("blockFormBtns").style.display="none";if(editDay)renderList()};
 document.getElementById("btnResetSched").onclick=()=>{if(confirm("¿Volver al horario original del "+cur+"?")){if(store.sched)delete store.sched[cur];save();renderAll()}};
 document.getElementById("bfSave").onclick=()=>{
 const s=document.getElementById("bfS").value,e=document.getElementById("bfE").value,t=document.getElementById("bfT").value.trim();
@@ -552,6 +893,8 @@ if(!s||!e){alert("Pon hora de inicio y fin.");return}
 if(!t){document.getElementById("bfT").focus();return}
 let mins=toMin(e)-toMin(s);if(!(mins>0))mins=30;
 const nb={start:s,end:e,title:t,detail:document.getElementById("bfD").value.trim(),cat:document.getElementById("bfC").value,mins,timer:Math.max(0,Math.min(180,+document.getElementById("bfM").value||0))};
+const lv=document.getElementById("bfLink").value;
+if(lv&&lv.indexOf(":")>0){const kk=lv.split(":");nb.link={k:kk[0],id:kk.slice(1).join(":")}}
 const base0=store.sched[cur]||SCH[cur];
 const sM=toMin(s);let eM=toMin(e);if(eM<=sM)eM+=1440;
 const ov=base0.filter((o,oi)=>{if(oi===editBIdx)return false;const os=toMin(o.start);let oe=toMin(o.end);if(oe<=os)oe+=1440;return sM<oe&&os<eM});
@@ -559,15 +902,96 @@ if(ov.length&&!confirm("Se empalma con: "+ov.map(o=>o.title+" ("+o.start+"–"+o
 if(!store.sched[cur])store.sched[cur]=JSON.parse(JSON.stringify(SCH[cur]));
 if(editBIdx>=0)store.sched[cur][editBIdx]=nb;else store.sched[cur].push(nb);
 store.sched[cur].sort((a,b2)=>toMin(a.start)-toMin(b2.start));
-save();document.getElementById("blockForm").style.display="none";document.getElementById("blockFormBtns").style.display="none";renderAll()};
-document.getElementById("btnEditD").onclick=()=>{editD=!editD;document.getElementById("drillForm").style.display="none";document.getElementById("drillFormBtns").style.display="none";renderDrills()};
+save();editBIdx=-1;document.getElementById("blockForm").style.display="none";document.getElementById("blockFormBtns").style.display="none";renderAll()};
+document.getElementById("btnAddR").onclick=()=>openRetoForm(-1);
+document.getElementById("rfCancel").onclick=()=>{editRIdx=-1;document.getElementById("retoForm").style.display="none";document.getElementById("retoFormBtns").style.display="none";document.getElementById("btnAddR").disabled=false};
+document.getElementById("rfDone").onclick=()=>{if(editRIdx<0)return;const r=store.retos[editRIdx];if(r.hecho)return;if(confirm(`¿Completaste "${r.t}"? +${+r.p||0} pts`)){r.hecho=1;store.pts+=+r.p||0;if(navigator.vibrate)navigator.vibrate(20);save();document.getElementById("retoForm").style.display="none";document.getElementById("retoFormBtns").style.display="none";document.getElementById("btnAddR").disabled=false;renderAll()}};
+document.getElementById("rfDel").onclick=()=>{if(editRIdx>=0&&confirm("¿Eliminar este reto?")){store.retos.splice(editRIdx,1);editRIdx=-1;save();document.getElementById("retoForm").style.display="none";document.getElementById("retoFormBtns").style.display="none";document.getElementById("btnAddR").disabled=false;renderRetos()}};
+document.getElementById("rfSave").onclick=()=>{
+const t=document.getElementById("rfT").value.trim();
+if(!t){document.getElementById("rfT").focus();return}
+const r={t,d:document.getElementById("rfD").value.trim(),limite:document.getElementById("rfL").value,p:Math.max(5,Math.min(100,+document.getElementById("rfP").value||50)),m:Math.max(0,Math.min(120,+document.getElementById("rfM").value||0))};
+if(editRIdx>=0){r.hecho=store.retos[editRIdx].hecho||0;r.id=store.retos[editRIdx].id||gid();store.retos[editRIdx]=r}else{r.hecho=0;r.id=gid();store.retos.push(r)}
+save();editRIdx=-1;document.getElementById("retoForm").style.display="none";document.getElementById("retoFormBtns").style.display="none";document.getElementById("btnAddR").disabled=false;renderRetos()};
+document.getElementById("btnAddU").onclick=()=>openRutForm("");
+document.getElementById("ruCancel").onclick=()=>{editRutT=null;document.getElementById("rutForm").style.display="none";document.getElementById("rutFormBtns").style.display="none";renderRutinas()};
+document.getElementById("ruDefault").onclick=()=>{const t=document.getElementById("ruT").value.trim();if(t&&(store.rutinas||{})[t]){if(confirm("¿Volver a la rutina original de "+t+"?")){delete store.rutinas[t];save();renderRutinas();openRutForm(t)}}};
+document.getElementById("ruDel").onclick=()=>{const t=document.getElementById("ruT").value.trim();if(t&&!(t in GUIDES)&&confirm(`¿Eliminar la rutina "${t}"?`)){delete store.rutinas[t];save();editRutT=null;document.getElementById("rutForm").style.display="none";document.getElementById("rutFormBtns").style.display="none";renderRutinas()}};
+document.getElementById("ruSave").onclick=()=>{
+const t=document.getElementById("ruT").value.trim();
+if(!t){document.getElementById("ruT").focus();return}
+const lines=document.getElementById("ruP").value.split("\n").map(s=>s.trim()).filter(s=>s);
+if(!store.rutinas)store.rutinas={};
+store.rutinas[t]={p:lines,t:document.getElementById("ruTip").value.trim(),e:document.getElementById("ruE").value.trim()};
+save();editRutT=null;document.getElementById("rutForm").style.display="none";document.getElementById("rutFormBtns").style.display="none";renderRutinas()};
+document.getElementById("dfTimer").onclick=()=>{const m=Math.max(1,+document.getElementById("dfM").value||15);openTimer(m,document.getElementById("dfT").value.trim()||"Ejercicio")};
+document.getElementById("dfDel").onclick=()=>{if(editIdx>=0&&confirm("¿Eliminar este ejercicio?")){store.drills.splice(editIdx,1);editIdx=-1;save();document.getElementById("drillForm").style.display="none";document.getElementById("drillFormBtns").style.display="none";document.getElementById("btnAddD").disabled=false;renderDrills()}};
 document.getElementById("btnAddD").onclick=()=>openDrillForm(-1);
-document.getElementById("dfCancel").onclick=()=>{document.getElementById("drillForm").style.display="none";document.getElementById("drillFormBtns").style.display="none"};
+document.getElementById("dfCancel").onclick=()=>{editIdx=-1;document.getElementById("drillForm").style.display="none";document.getElementById("drillFormBtns").style.display="none";document.getElementById("btnAddD").disabled=false};
 document.getElementById("dfSave").onclick=()=>{
-const t=document.getElementById("dfT").value.trim(),m=Math.max(1,Math.min(120,+document.getElementById("dfM").value||15)),d=document.getElementById("dfD").value.trim();
+const t=document.getElementById("dfT").value.trim(),m=Math.max(1,Math.min(120,+document.getElementById("dfM").value||15)),d=document.getElementById("dfD").value.trim(),para=document.getElementById("dfP").value.trim();
 if(!t){document.getElementById("dfT").focus();return}
-if(editIdx>=0)store.drills[editIdx]={t,d,m};else store.drills.push({t,d,m});
-save();document.getElementById("drillForm").style.display="none";document.getElementById("drillFormBtns").style.display="none";renderDrills()};
+if(editIdx>=0)store.drills[editIdx]={t,d,m,para,id:store.drills[editIdx].id||gid()};else store.drills.push({t,d,m,para,id:gid()});
+save();editIdx=-1;document.getElementById("drillForm").style.display="none";document.getElementById("drillFormBtns").style.display="none";document.getElementById("btnAddD").disabled=false;renderDrills()};
+document.getElementById("btnAddG").onclick=()=>{["gRival","gTorneo","gFecha","gHora","gLugar","gNota"].forEach(id=>document.getElementById(id).value="");document.getElementById("gameForm").style.display="";document.getElementById("gameFormBtns").style.display="flex"};
+document.getElementById("gfCancel").onclick=()=>{document.getElementById("gameForm").style.display="none";document.getElementById("gameFormBtns").style.display="none"};
+document.getElementById("gfSave").onclick=()=>{
+const rival=document.getElementById("gRival").value.trim(),fecha=document.getElementById("gFecha").value,hora=document.getElementById("gHora").value;
+if(!rival||!fecha||!hora){alert("Pon rival, fecha y hora.");return}
+const g={id:gid(),rival,torneo:document.getElementById("gTorneo").value.trim(),fecha,hora,lugar:document.getElementById("gLugar").value.trim(),nota:document.getElementById("gNota").value.trim(),estado:"prog"};
+if(!store.games)store.games=[];store.games.push(g);
+const wd=DAYS[gwd(fecha)];if(!store.sched[wd])store.sched[wd]=JSON.parse(JSON.stringify(SCH[wd]));
+const det=((g.lugar?g.lugar+" • ":"")+(g.torneo||"")||"Juego").trim();
+store.sched[wd].push({start:hora,end:addH(hora,120),title:"Partido vs "+rival,detail:det,cat:"basket",mins:120,timer:0,gameId:g.id});
+store.sched[wd].sort((a,b2)=>toMin(a.start)-toMin(b2.start));
+avisoJuego(g);
+save();document.getElementById("gameForm").style.display="none";document.getElementById("gameFormBtns").style.display="none";renderAll()};
+function dropGameBlocks(id){if(!store.sched)return;Object.keys(store.sched).forEach(wd=>{store.sched[wd]=store.sched[wd].filter(b=>b.gameId!==id)})}
+document.getElementById("btnSaveR").onclick=()=>{
+const g=(store.games||[]).find(x=>x.id===curG);if(!g)return;
+const K={Eq:"eq",Riv:"riv",Min:"min",Pts:"pts",Ast:"ast",Reb:"reb",Rob:"rob",Bloq:"bloq",Per:"per",Tcm:"tcm",Tci:"tci",T3m:"t3m",T3i:"t3i",Tlm:"tlm",Tli:"tli",Fal:"faltas"};
+Object.keys(K).forEach(f=>{const v=document.getElementById("r"+f).value;g[K[f]]=v===""?"":+v});
+const eS=document.querySelector("#rEsf button.on"),cS=document.querySelector("#rCom button.on");
+g.esf=eS?eS.dataset.v:"";g.com=cS?cS.dataset.v:"";g.enc=document.getElementById("rEnc").value;
+g.mejor=document.getElementById("rMejor").value.trim();g.mejorar=document.getElementById("rMejorar").value.trim();
+if(g.estado!=="jug"){g.estado="jug";dropGameBlocks(g.id);
+if(!g.pg){g.pg=1;store.pts+=30+(WL(g)==="V"?20:0)}}
+save();renderAll();goTab("v-juegos")};
+document.getElementById("btnDelG").onclick=()=>{if(!curG)return;if(confirm("¿Eliminar este juego?")){const gg=(store.games||[]).find(x=>x.id===curG);quitaAvisoJuego(gg||{});store.games=(store.games||[]).filter(x=>x.id!==curG);dropGameBlocks(curG);curG=null;save();renderAll();goTab("v-juegos")}};
+document.getElementById("jBack").onclick=()=>goTab("v-juegos");
+document.querySelectorAll("#rEsf button, #rCom button").forEach(b=>b.onclick=()=>{const sib=[...b.parentElement.querySelectorAll("button")];sib.forEach(x=>x.classList.remove("on"));b.classList.add("on")});
+function refreshExport(){document.getElementById("expText").value=genExport(+document.getElementById("expRange").value||7)}
+document.getElementById("btnExport").onclick=()=>{document.getElementById("exportModal").style.display="grid";refreshExport()};
+document.getElementById("expRange").onchange=refreshExport;
+document.getElementById("btnCloseExp").onclick=()=>{document.getElementById("exportModal").style.display="none"};
+document.getElementById("btnCopy").onclick=()=>{const t=document.getElementById("expText");const done=()=>{if(navigator.vibrate)navigator.vibrate(10);document.getElementById("btnCopy").textContent="Copiado ✓";setTimeout(()=>document.getElementById("btnCopy").textContent="Copiar",1500)};
+if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t.value).then(done).catch(()=>{t.select();document.execCommand("copy");done()})}
+else{t.select();document.execCommand("copy");done()}};
+document.getElementById("btnShare").onclick=()=>{const t=document.getElementById("expText").value;
+if(navigator.share){navigator.share({title:"Resumen Base Élite",text:t}).catch(()=>{})}
+else{window.open("https://wa.me/?text="+encodeURIComponent(t),"_blank")}};
+document.getElementById("btnHist").onclick=()=>{const w=document.getElementById("histWrap");const show=w.style.display==="none";w.style.display=show?"":"none";document.getElementById("btnHist").textContent=show?"Ocultar historial":"Historial por fecha";if(show)renderHist()};
+document.getElementById("histPrev").onclick=()=>moveHist(-1);
+document.getElementById("histNext").onclick=()=>moveHist(1);
+document.getElementById("histFecha").onchange=renderHist;
+document.getElementById("btnBackup").onclick=()=>{document.getElementById("buText").value=JSON.stringify({app:"base-elite-mx",v:1,exported:todayKey(),store});document.getElementById("reText").value="";document.getElementById("backupModal").style.display="grid"};
+document.getElementById("buClose").onclick=()=>{document.getElementById("backupModal").style.display="none"};
+document.getElementById("buCopy").onclick=()=>{const t=document.getElementById("buText");const done=()=>{document.getElementById("buCopy").textContent="Copiado ✓";setTimeout(()=>document.getElementById("buCopy").textContent="Copiar respaldo",1500)};
+if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t.value).then(done).catch(()=>{t.select();document.execCommand("copy");done()})}
+else{t.select();document.execCommand("copy");done()}};
+document.getElementById("buRestore").onclick=()=>{let o;try{o=JSON.parse(document.getElementById("reText").value)}catch(e){alert("Ese texto no es un respaldo válido.");return}
+if(!o||o.app!=="base-elite-mx"||!o.store||typeof o.store.done!=="object"||typeof o.store.pts!=="number"){alert("Ese texto no es un respaldo válido.");return}
+if(!confirm("¿Reemplazar todos los datos actuales con este respaldo?"))return;
+const s=o.store;store.done=s.done||{};store.pts=s.pts||0;store.racha=s.racha||0;store.rachaDays=s.rachaDays||[];
+store.profile=s.profile||store.profile;store.check=s.check||{};store.custom=s.custom||{};store.drills=s.drills||store.drills;store.sched=s.sched||{};store.games=s.games||[];store.retos=s.retos||[];store.rutinas=s.rutinas||{};if(s.seen)store.seen=s.seen;
+save();renderAll();document.getElementById("backupModal").style.display="none";alert("Respaldo restaurado.")};
+function wStep(n){[1,2,3].forEach(k=>document.getElementById("wStep"+k).style.display=k===n?"":"none");document.getElementById("wDots").textContent=n===1?"●○○":n===2?"○●○":"○○●"}
+document.getElementById("wNext1").onclick=()=>{const v=document.getElementById("wNombre").value.trim();if(v){if(!store.profile)store.profile={};store.profile.nombre=v;save()}wStep(2)};
+document.getElementById("wBack2").onclick=()=>wStep(1);
+document.getElementById("wNext2").onclick=()=>wStep(3);
+document.getElementById("wBack3").onclick=()=>wStep(2);
+document.getElementById("wStart").onclick=()=>{store.seen=1;save();document.getElementById("welcomeModal").style.display="none";renderAll()};
+if(!(store.profile&&store.profile.nombre)){wStep(1);document.getElementById("welcomeModal").style.display="grid"}
 document.getElementById("btnSaveP").onclick=saveProfile;
 document.querySelectorAll("#cAnimo button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#cAnimo button").forEach(x=>x.classList.remove("on"));b.classList.add("on")});
 let tSec=900,tInt=null;

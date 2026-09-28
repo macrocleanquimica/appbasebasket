@@ -24,10 +24,17 @@ PASO 3 - Descarga e instala
    funciona sin internet y sin Chrome.
 
 NOTAS
-- Es un APK de prueba (firma debug): sirve perfecto para uso
-  familiar. Si un día la quieres publicar en Play Store se firma
-  en modo release (avísame y lo preparamos).
-- Cada vez que cambies algo en www/index.html, súbelo al repo
-  y se genera un APK nuevo automáticamente.
+- El APK sale FIRMADO (release): las actualizaciones se instalan
+  ENCIMA sin desinstalar y SIN perder datos (rutinas, puntos, juegos).
+- IMPORTANTE (solo una vez): si tienes instalada la versión vieja
+  (debug sin firma), desinstálala e instala esta release. A partir
+  de ahí, todas las actualizaciones conservan todo.
+- ANTES DE ACTUALIZAR, por seguridad: Logros > Respaldar datos >
+  Copiar respaldo (guárdalo en tus notas). Si algo falla, se restaura
+  en 1 minuto.
+- Cada push al repo genera un APK nuevo con versionCode mayor
+  automáticamente.
 - NO edites la carpeta android/ a mano; todo cambio visual se
   hace en www/index.html y luego: npx cap sync android
+- NO pierdas CLAVE_FIRMA.txt ni base-elite-key.p12: sin ellos no hay
+  más actualizaciones compatibles.
