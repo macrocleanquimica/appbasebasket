@@ -1,3 +1,7 @@
 node_modules/
 android/app/build/
 android/.gradle/
+base-elite-key.p12
+firma-key.pem
+firma-cert.pem
+CLAVE_FIRMA.txt
