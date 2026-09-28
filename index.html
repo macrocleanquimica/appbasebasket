@@ -19,18 +19,20 @@ body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','SF Pro
 header{position:sticky;top:0;z-index:20;background:rgba(242,242,247,.85);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:.5px solid #C6C6C8;padding:10px 16px calc(8px + env(safe-area-inset-top));padding-top:calc(10px + env(safe-area-inset-top))}
 .navsmall{display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--mut);font-weight:600}
 .navsmall button{background:none;border:none;color:var(--blue);font-size:13px;font-weight:600;padding:4px 0;cursor:pointer;font-family:inherit}
-.largetitle{font-size:32px;font-weight:800;letter-spacing:-.5px;margin:4px 0 8px;text-align:center}
-.largetitle span{font-size:15px;font-weight:600;color:var(--mut);display:block;letter-spacing:0}
+.largetitle{font-size:23px;font-weight:800;letter-spacing:-.5px;margin:2px 0 4px;text-align:center;cursor:pointer}
+.largetitle span{font-size:12px;font-weight:600;color:var(--mut);display:block;letter-spacing:0}
+.statline{text-align:center;font-size:12px;color:var(--mut);font-weight:600;margin:0 0 2px}
+.statline b{color:var(--txt)}
 .widgets{display:flex;gap:8px}
 .w{flex:1;background:var(--card);border-radius:14px;padding:6px;text-align:center;box-shadow:0 1px 4px #0001}
 .w b{display:block;font-size:15px}
 .w span{font-size:10px;color:var(--mut);font-weight:600}
 /* Segmented days iOS */
-.days{display:flex;gap:8px;justify-content:safe center;margin-top:10px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
+.days{display:flex;gap:6px;justify-content:safe center;margin-top:6px;overflow-x:auto;padding:2px 2px 4px;scrollbar-width:none}
 .days::-webkit-scrollbar{display:none}
-.daybtn{flex:none;min-width:52px;border:none;background:var(--card);border-radius:14px;padding:8px 10px;box-shadow:0 1px 3px #0001;cursor:pointer;text-align:center}
-.daybtn b{display:block;font-size:14px}
-.daybtn small{font-size:11px;color:var(--mut);font-weight:600}
+.daybtn{flex:none;min-width:46px;border:none;background:var(--card);border-radius:12px;padding:6px 8px;box-shadow:0 1px 3px #0001;cursor:pointer;text-align:center}
+.daybtn b{display:block;font-size:13px}
+.daybtn small{font-size:10px;color:var(--mut);font-weight:600}
 .daybtn.active{background:var(--txt);color:#fff}
 .daybtn.active small{color:#fff}
 /* Grouped list */
@@ -50,8 +52,8 @@ main{max-width:600px;margin:0 auto;padding:12px 14px}
 .chev{color:#C7C7CC;font-size:18px}
 .pill{font-size:11px;font-weight:800;padding:3px 8px;border-radius:99px;margin-top:4px;display:inline-block}
 .live{background:#fff;border-radius:16px;padding:12px;margin:10px 0;box-shadow:0 1px 4px #0001;border-left:5px solid var(--green);font-size:14px}
-.progress{background:var(--card);border-radius:16px;padding:12px;box-shadow:0 1px 4px #0001}
-.bar{height:8px;background:#E5E5EA;border-radius:99px;overflow:hidden;margin-top:8px}
+.progress{background:var(--card);border-radius:12px;padding:8px 10px;box-shadow:0 1px 4px #0001}
+.bar{height:5px;background:#E5E5EA;border-radius:99px;overflow:hidden;margin-top:5px}
 .bar i{display:block;height:100%;width:0;background:var(--blue);transition:width .3s}
 .ibtn{border:none;border-radius:12px;padding:9px 12px;font-weight:700;font-size:13px;cursor:pointer}
 button:disabled{opacity:.5;color:var(--mut)!important;cursor:default}
@@ -60,7 +62,7 @@ button:disabled{opacity:.5;color:var(--mut)!important;cursor:default}
 .ibtn-gray{background:#F2F2F7;color:var(--blue)}
 /* Tab bar iOS */
 nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.9);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:.5px solid #C6C6C8;display:flex;padding:8px 6px calc(10px + env(safe-area-inset-bottom));z-index:20}
-nav button{flex:1;background:none;border:none;color:var(--mut);font-size:10px;font-weight:600}
+nav button{flex:1;background:none;border:none;color:var(--mut);font-size:12px;font-weight:600}
 nav button i{font-size:22px;display:block;font-style:normal}
 nav button.active{color:var(--blue)}
 section.view{display:none}section.view.active{display:block}
@@ -103,16 +105,14 @@ section.view{display:none}section.view.active{display:block}
 </head>
 <body>
 <header>
-<div class="navsmall"><button id="btnHoy">‹ Hoy</button><span>Ser Base Élite MX</span><span></span></div>
-<div class="largetitle">Estrategia del Día <span id="subTitle">Futuro mejor base de México</span></div>
-<div class="widgets">
-<div class="w"><b id="sPts">0</b><span>Puntos</span></div>
-<div class="w"><b id="sPct">0%</b><span>Progreso</span></div>
-<div class="w"><b id="sRacha">0</b><span>Racha</span></div>
+<div class="navsmall"><button id="btnHoy" style="flex:none;min-width:64px;text-align:left">‹ Hoy</button><span style="flex:1;text-align:center">Ser Base Élite MX</span><button id="btnPerfilTop" style="flex:none;min-width:64px;text-align:right">Perfil</button></div>
+<div class="largetitle" id="headTitle">Estrategia del Día <span id="headChev" style="font-size:14px;color:var(--mut)">▾</span><span id="subTitle">Futuro mejor base de México</span></div>
+<div id="headExtra">
+<div class="statline"><b><span id="sPts">0</span> pts</b> • <b><span id="sPct">0%</span> hoy</b> • <b>racha <span id="sRacha">0</span></b></div>
+<div class="secTitle" id="dayTitle" style="margin:6px 2px 4px">Lunes</div>
+<div class="progress"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700"><span id="dayCount">0/0</span></div><div class="bar"><i id="barFill"></i></div></div>
 </div>
 <div class="days" id="days"></div>
-<div class="secTitle" id="dayTitle" style="margin:8px 2px 6px">Lunes</div>
-<div class="progress"><div style="display:flex;justify-content:space-between;font-size:13px;font-weight:700"><span id="dayCount">0/0</span><span style="color:var(--blue)">Ver todo</span></div><div class="bar"><i id="barFill"></i></div></div>
 </header>
 <main>
 <div id="installTip" class="install" style="display:none">En iPhone: Compartir → Añadir a pantalla de inicio. En Android: menú → Agregar a pantalla principal.</div>
@@ -291,7 +291,6 @@ section.view{display:none}section.view.active{display:block}
 <button data-v="v-base">Base</button>
 <button data-v="v-juegos">Juegos</button>
 <button data-v="v-logros">Logros</button>
-<button data-v="v-perfil">Perfil</button>
 </nav>
 <div id="timerModal"><div id="timerBox"><div class="grab"></div>
 <div id="timerName" style="font-weight:800"></div>
@@ -867,6 +866,7 @@ document.querySelectorAll("#baseTabs button").forEach(b=>b.onclick=()=>baseTab(b
 document.getElementById("dEditRut").onclick=()=>{if(!curD)return;const t=curD.b.title;document.getElementById("detailModal").style.display="none";goTab("v-base");baseTab("sub-rut");openRutForm(t)};
 document.getElementById("dClose").onclick=()=>{document.getElementById("detailModal").style.display="none"};
 document.getElementById("btnHoy").onclick=()=>{cur=DAYS[(new Date().getDay()+6)%7]||"Lunes";renderAll()};
+document.getElementById("btnPerfilTop").onclick=()=>goTab("v-perfil");
 document.getElementById("btnReset").onclick=()=>{if(confirm("¿Reiniciar "+cur+"?")){delete store.done[cur+"_"+new Date().toISOString().slice(0,10)];save();renderAll()}};
 document.getElementById("btnResetAll").onclick=()=>{if(confirm("¿Borrar puntos, racha y avance? Es para empezar de cero.")){const prof=store.profile,chk=store.check,cus=store.custom,dri=store.drills,sch=store.sched,gam=store.games,ret=store.retos,rut=store.rutinas,seen=store.seen;localStorage.removeItem("baseEliteMX");store.done={};store.pts=0;store.racha=0;store.rachaDays=[];store.profile=prof;store.check=chk;store.custom=cus;store.drills=dri;store.sched=sch;store.games=gam;store.retos=ret;store.rutinas=rut;store.seen=seen;save();renderAll()}};
 function openBlockForm(idx){editBIdx=idx;const a=schedFor(cur);const b=idx>=0?a[idx]:{start:"08:00",end:"09:00",title:"",detail:"",cat:"basket",timer:0};
@@ -992,6 +992,9 @@ document.getElementById("wNext2").onclick=()=>wStep(3);
 document.getElementById("wBack3").onclick=()=>wStep(2);
 document.getElementById("wStart").onclick=()=>{store.seen=1;save();document.getElementById("welcomeModal").style.display="none";renderAll()};
 if(!(store.profile&&store.profile.nombre)){wStep(1);document.getElementById("welcomeModal").style.display="grid"}
+function applyHead(){const c=store.uiHead===1;document.getElementById("headExtra").style.display=c?"none":"";document.getElementById("headChev").textContent=c?"▸":"▾"}
+document.getElementById("headTitle").onclick=()=>{store.uiHead=store.uiHead===1?0:1;save();applyHead()};
+applyHead();
 document.getElementById("btnSaveP").onclick=saveProfile;
 document.querySelectorAll("#cAnimo button").forEach(b=>b.onclick=()=>{document.querySelectorAll("#cAnimo button").forEach(x=>x.classList.remove("on"));b.classList.add("on")});
 let tSec=900,tInt=null;
