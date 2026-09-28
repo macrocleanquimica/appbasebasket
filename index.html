@@ -57,6 +57,28 @@ main{max-width:600px;margin:0 auto;padding:6px 10px}
 .bar i{display:block;height:100%;width:0;background:var(--blue);transition:width .3s}
 .ibtn{border:none;border-radius:12px;padding:9px 12px;font-weight:700;font-size:13px;cursor:pointer}
 button:disabled{opacity:.5;color:var(--mut)!important;cursor:default}
+body.dark{--bg:#000000;--card:#1C1C1E;--txt:#F2F2F7;--mut:#98989F;color-scheme:dark}
+body.dark header{background:rgba(28,28,30,.85);border-bottom-color:#38383A}
+body.dark nav{background:rgba(28,28,30,.9);border-top-color:#38383A}
+body.dark .group{box-shadow:0 1px 4px #0008}
+body.dark .cell{background:#1C1C1E;border-bottom-color:#38383A}
+body.dark .tinfo p,body.dark #dDesc{color:#D1D1D6}
+body.dark .ttime{color:#98989F}
+body.dark .frow{background:#1C1C1E;border-bottom-color:#38383A}
+body.dark .frow label{color:#D1D1D6}
+body.dark .frow input,body.dark .frow select{background:#2C2C2E;color:#F2F2F7}
+body.dark .mot{background:#1C1C1E;color:#D1D1D6}
+body.dark .rank{background:#1C1C1E}
+body.dark .bar{background:#38383A}
+body.dark .ibtn-gray{background:#2C2C2E}
+body.dark .seg button{background:#2C2C2E;color:#F2F2F7}
+body.dark .seg button.on{background:#F2F2F7;color:#000}
+body.dark .daybtn.active{background:#FF9500}
+body.dark .check{background:#2C2C2E;border-color:#48484A}
+body.dark #timerBox,body.dark #detailBox,body.dark #exportBox,body.dark #welcomeBox{background:#1C1C1E}
+body.dark #dCustom,body.dark #expText,body.dark #buText,body.dark #reText,body.dark #ruP{background:#2C2C2E;color:#F2F2F7}
+body.dark .live{background:#1C1C1E}
+body.dark .install{background:#1C1C1E}
 .ibtn-blue{background:#007AFF1A;color:var(--blue)}
 .ibtn-orange{background:#FF95001A;color:#C26A00}
 .ibtn-gray{background:#F2F2F7;color:var(--blue)}
@@ -259,7 +281,9 @@ section.view{display:none}section.view.active{display:block}
 </section>
 <section id="v-perfil" class="view">
 <div class="secTitle">Perfil</div>
-<div class="group" style="padding:12px;display:flex;gap:12px;align-items:center"><div class="avatar" id="pAvatar">–</div><div><div id="pName" style="font-size:17px;font-weight:800">Tu perfil</div><div id="pSub" style="font-size:12px;color:var(--mut)">Completa tus datos</div></div></div>
+<div class="group" style="padding:12px"><div id="pName" style="font-size:17px;font-weight:800">Tu perfil</div><div id="pSub" style="font-size:12px;color:var(--mut)">Completa tus datos</div></div>
+<div class="secTitle">Apariencia</div>
+<div class="group"><div class="frow"><label>Tema</label><div class="seg" id="themeSeg"><button data-v="light">Claro</button><button data-v="dark">Oscuro</button></div></div></div>
 <div class="secTitle">Datos del jugador</div>
 <div class="group">
 <div class="frow"><label>Nombre</label><input id="fNombre" placeholder="Ej: Joel" maxlength="30"></div>
@@ -283,6 +307,7 @@ section.view{display:none}section.view.active{display:block}
 </div>
 <div class="row"><button class="ibtn ibtn-blue" id="btnSaveP">Guardar</button></div>
 <div class="mot">Los avisos (6:00 despertar, 14:10 bote y día de juego) suenan solo en la app instalada. Si aún usas el navegador, pon alarmas del cel a esas horas.</div>
+<div style="text-align:center;font-size:11px;color:var(--mut);margin-top:10px">Base Élite MX • v<span id="appV">?</span></div>
 <div class="mot" id="pTip">Para mejorar diario a los 12 años lo que más suma: dormir 9-10 h, agua, 15 min de bote y contar tu porcentaje de tiro. Todo queda guardado en el cel.</div>
 </section>
 </main>
@@ -440,6 +465,7 @@ function gidNum(s){let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%700
 async function avisoJuego(g){const ln=LN();if(!ln||!g.fecha||!g.hora)return;try{const d=new Date(g.fecha+"T"+g.hora+":00");d.setHours(d.getHours()-2);if(d<=new Date())return;
 const id=gidNum(g.id);await ln.cancel({notifications:[{id}]});await ln.schedule({notifications:[{id,title:"Hoy hay partido",body:"vs "+g.rival+" a las "+g.hora+". ¡A ganar!",schedule:{at:d},smallIcon:"ic_launcher"}]});g.notif=id;save()}catch(e){}}
 async function quitaAvisoJuego(g){const ln=LN();if(!ln||!g||!g.notif)return;try{await ln.cancel({notifications:[{id:g.notif}]})}catch(e){}}
+const APP_V="1.0.16";
 function save(){localStorage.setItem("baseEliteMX",JSON.stringify(store))}
 function ptsFor(b){return b.cat==="basket"?20:10}
 function toMin(t){const[a,b]=t.split(":").map(Number);return a*60+b}
@@ -835,7 +861,10 @@ const done=c.sueno!==""&&c.sueno!=null&&String(c.sueno)!==""||c.agua!==""&&c.agu
 box.innerHTML=done?"":`<button class="cell" onclick="goTab('v-perfil')" style="border-left:5px solid var(--orange);margin-top:8px"><span class="tinfo"><h3>Te falta el check de hoy</h3><p>Toca aquí: sueño, agua y ánimo en 20 segundos.</p></span><span class="chev">›</span></button>`}
 function calcEdad(nac){if(!nac)return"";const n=new Date(nac),h=new Date();let e=h.getFullYear()-n.getFullYear();const m=h.getMonth()-n.getMonth();if(m<0||(m===0&&h.getDate()<n.getDate()))e--;return e>=0&&e<100?e+" años":""}
 function todayKey(){return new Date().toISOString().slice(0,10)}
+function applyTheme(){const dark=store.uiTheme==="dark";document.body.classList.toggle("dark",dark);document.querySelectorAll("#themeSeg button").forEach(x=>x.classList.toggle("on",(x.dataset.v==="dark")===dark))}
+document.querySelectorAll("#themeSeg button").forEach(b=>b.onclick=()=>{store.uiTheme=b.dataset.v;save();applyTheme()});
 function renderProfile(){
+const av=document.getElementById("appV");if(av)av.textContent=APP_V;applyTheme();
 const p=store.profile||{};
 const set=(id,v)=>{const el=document.getElementById(id);if(el&&document.activeElement!==el)el.value=v||""};
 set("fNombre",p.nombre);set("fNac",p.nac);set("fEquipo",p.equipo);set("fNumero",p.numero);set("fMano",p.mano);set("fAltura",p.altura);set("fPeso",p.peso);set("fFoco",p.foco||"Bote");set("fMeta",p.meta);
@@ -843,7 +872,6 @@ document.getElementById("fEdad").value=calcEdad(p.nac);
 const c=store.check[todayKey()]||{};
 set("cSueno",c.sueno);set("cAgua",c.agua);set("cEstado",c.estado||"Bien");set("cNota",c.nota);
 document.querySelectorAll("#cAnimo button").forEach(b=>b.classList.toggle("on",String(c.animo||"")===b.dataset.v));
-document.getElementById("pAvatar").textContent=p.nombre?(p.nombre.trim()[0]||"–").toUpperCase():"–";
 document.getElementById("pName").textContent=p.nombre||"Tu perfil";
 const parts=[];if(calcEdad(p.nac))parts.push(calcEdad(p.nac));if(p.equipo)parts.push(p.equipo);if(p.numero!==""&&p.numero!=null&&p.numero!==undefined&&String(p.numero)!=="")parts.push("#"+p.numero);if(p.altura||p.peso)parts.push((p.altura?p.altura+" cm":"—")+" • "+(p.peso?p.peso+" kg":"—"));
 document.getElementById("pSub").textContent=parts.join(" • ")||"Completa tus datos";
@@ -868,7 +896,7 @@ document.getElementById("dClose").onclick=()=>{document.getElementById("detailMo
 document.getElementById("btnHoy").onclick=()=>{cur=DAYS[(new Date().getDay()+6)%7]||"Lunes";renderAll()};
 document.getElementById("btnPerfilTop").onclick=()=>goTab("v-perfil");
 document.getElementById("btnReset").onclick=()=>{if(confirm("¿Reiniciar "+cur+"?")){delete store.done[cur+"_"+new Date().toISOString().slice(0,10)];save();renderAll()}};
-document.getElementById("btnResetAll").onclick=()=>{if(confirm("¿Borrar puntos, racha y avance? Es para empezar de cero.")){const prof=store.profile,chk=store.check,cus=store.custom,dri=store.drills,sch=store.sched,gam=store.games,ret=store.retos,rut=store.rutinas,seen=store.seen;localStorage.removeItem("baseEliteMX");store.done={};store.pts=0;store.racha=0;store.rachaDays=[];store.profile=prof;store.check=chk;store.custom=cus;store.drills=dri;store.sched=sch;store.games=gam;store.retos=ret;store.rutinas=rut;store.seen=seen;save();renderAll()}};
+document.getElementById("btnResetAll").onclick=()=>{if(confirm("¿Borrar puntos, racha y avance? Es para empezar de cero.")){const prof=store.profile,chk=store.check,cus=store.custom,dri=store.drills,sch=store.sched,gam=store.games,ret=store.retos,rut=store.rutinas,seen=store.seen,th=store.uiTheme,qu=store.uiQuick,hd=store.uiHead;localStorage.removeItem("baseEliteMX");store.done={};store.pts=0;store.racha=0;store.rachaDays=[];store.profile=prof;store.check=chk;store.custom=cus;store.drills=dri;store.sched=sch;store.games=gam;store.retos=ret;store.rutinas=rut;store.seen=seen;store.uiTheme=th;store.uiQuick=qu;store.uiHead=hd;save();renderAll()}};
 function openBlockForm(idx){editBIdx=idx;const a=schedFor(cur);const b=idx>=0?a[idx]:{start:"08:00",end:"09:00",title:"",detail:"",cat:"basket",timer:0};
 document.getElementById("bfS").value=b.start||"08:00";document.getElementById("bfE").value=b.end||"09:00";document.getElementById("bfT").value=b.title||"";document.getElementById("bfD").value=b.detail||"";document.getElementById("bfC").value=b.cat||"basket";document.getElementById("bfM").value=b.timer||"";
 ensureIds();
@@ -983,7 +1011,7 @@ document.getElementById("buRestore").onclick=()=>{let o;try{o=JSON.parse(documen
 if(!o||o.app!=="base-elite-mx"||!o.store||typeof o.store.done!=="object"||typeof o.store.pts!=="number"){alert("Ese texto no es un respaldo válido.");return}
 if(!confirm("¿Reemplazar todos los datos actuales con este respaldo?"))return;
 const s=o.store;store.done=s.done||{};store.pts=s.pts||0;store.racha=s.racha||0;store.rachaDays=s.rachaDays||[];
-store.profile=s.profile||store.profile;store.check=s.check||{};store.custom=s.custom||{};store.drills=s.drills||store.drills;store.sched=s.sched||{};store.games=s.games||[];store.retos=s.retos||[];store.rutinas=s.rutinas||{};if(s.seen)store.seen=s.seen;
+store.profile=s.profile||store.profile;store.check=s.check||{};store.custom=s.custom||{};store.drills=s.drills||store.drills;store.sched=s.sched||{};store.games=s.games||[];store.retos=s.retos||[];store.rutinas=s.rutinas||{};if(s.seen)store.seen=s.seen;if(s.uiTheme)store.uiTheme=s.uiTheme;
 save();renderAll();document.getElementById("backupModal").style.display="none";alert("Respaldo restaurado.")};
 function wStep(n){[1,2,3].forEach(k=>document.getElementById("wStep"+k).style.display=k===n?"":"none");document.getElementById("wDots").textContent=n===1?"●○○":n===2?"○●○":"○○●"}
 document.getElementById("wNext1").onclick=()=>{const v=document.getElementById("wNombre").value.trim();if(v){if(!store.profile)store.profile={};store.profile.nombre=v;save()}wStep(2)};
