@@ -123,6 +123,7 @@ section.view{display:none}section.view.active{display:block}
 .seg{display:flex;gap:6px;flex:1}
 .seg button{flex:1;border:none;background:#F2F2F7;border-radius:10px;padding:9px 0;font-size:14px;cursor:pointer}
 .seg button.on{background:var(--txt);color:#fff}
+#baseTabs button{font-size:12.5px;padding:9px 2px}
 </style>
 </head>
 <body>
@@ -167,7 +168,7 @@ section.view{display:none}section.view.active{display:block}
 <div class="secTitle">Modo Base</div>
 <div class="rank" id="rankBox">Nivel: Novato</div>
 <div class="mot" id="focoBox">Enfoque de la semana: Bote</div>
-<div class="seg" id="baseTabs" style="margin-top:8px"><button data-t="sub-ej" class="on">Ejercicios</button><button data-t="sub-rut">Rutinas</button><button data-t="sub-ret">Retos</button></div>
+<div class="seg" id="baseTabs" style="margin-top:8px"><button data-t="sub-ej" class="on">Ejercicios</button><button data-t="sub-rut">Rutinas</button><button data-t="sub-ret">Retos</button><button data-t="sub-obj">Objetivos</button></div>
 <div id="sub-ej">
 <div class="secTitle">Ejercicios con cronómetro</div>
 <div class="group" id="drills"></div>
@@ -204,6 +205,24 @@ section.view{display:none}section.view.active{display:block}
 <div class="frow"><label>Timer (min)</label><input id="rfM" type="number" min="0" max="120" placeholder="0 = sin timer"></div>
 </div>
 <div class="row" id="retoFormBtns" style="display:none"><button class="ibtn ibtn-blue" id="rfDone">Cumplir reto</button><button class="ibtn ibtn-blue" id="rfSave">Guardar</button><button class="ibtn ibtn-gray" id="rfCancel">Cancelar</button><button class="ibtn ibtn-gray" id="rfDel" style="color:var(--red)">Eliminar</button></div>
+</div>
+<div id="sub-obj" style="display:none">
+<div class="secTitle">Objetivos del jugador</div>
+<div class="mot" id="objResumen">Define uno o varios objetivos por semana, por mes y por año. Toca el círculo cuando lo cumplas y agrega los nuevos.</div>
+<div class="secTitle">Semanal</div>
+<div class="group" id="objSemanal"></div>
+<div class="secTitle">Mensual</div>
+<div class="group" id="objMensual"></div>
+<div class="secTitle">Anual</div>
+<div class="group" id="objAnual"></div>
+<div class="row"><button class="ibtn ibtn-blue" id="btnAddObj">Agregar objetivo</button></div>
+<div class="group" id="objForm" style="display:none;margin-top:8px">
+<div class="frow"><label>Tipo</label><select id="ofTipo"><option value="semanal">Semanal</option><option value="mensual">Mensual</option><option value="anual">Anual</option></select></div>
+<div class="frow"><label>Objetivo</label><input id="ofT" maxlength="60" placeholder="Ej: 20 de 25 tiros libres"></div>
+<div class="frow"><label>Detalle</label><input id="ofD" maxlength="120" placeholder="Ej: 5 libres al terminar cada entreno"></div>
+<div class="frow"><label>Cómo lo mido</label><input id="ofM" maxlength="100" placeholder="Ej: anoto mis aciertos en la libreta"></div>
+</div>
+<div class="row" id="objFormBtns" style="display:none"><button class="ibtn ibtn-blue" id="ofDone">Cumplir objetivo</button><button class="ibtn ibtn-blue" id="ofSave">Guardar</button><button class="ibtn ibtn-gray" id="ofCancel">Cancelar</button><button class="ibtn ibtn-gray" id="ofDel" style="color:var(--red)">Eliminar</button></div>
 </div>
 </section>
 <section id="v-juegos" class="view">
@@ -378,7 +397,7 @@ section.view{display:none}section.view.active{display:block}
 </div>
 <div class="wstep" id="wStep3" style="display:none">
 <h2 style="margin:10px 0 4px">Tus 5 pestañas</h2>
-<p style="font-size:14px;color:#3A3A3C;line-height:1.6"><b>Estrategia:</b> tu día hora por hora.<br><b>Base:</b> ejercicios, rutinas y retos.<br><b>Juegos:</b> programa y registra partidos.<br><b>Logros:</b> puntos, medallas e historial.<br><b>Perfil:</b> tus datos y check diario.</p>
+<p style="font-size:14px;color:#3A3A3C;line-height:1.6"><b>Estrategia:</b> tu día hora por hora.<br><b>Base:</b> ejercicios, rutinas, retos y objetivos.<br><b>Juegos:</b> programa y registra partidos.<br><b>Logros:</b> puntos, medallas e historial.<br><b>Perfil:</b> tus datos y check diario.</p>
 <div class="row"><button class="ibtn ibtn-gray" id="wBack3">Atrás</button><button class="ibtn ibtn-blue" id="wStart">Empezar</button></div>
 </div>
 <div id="wDots" style="text-align:center;font-size:12px;color:var(--mut);letter-spacing:4px;margin-top:6px">●○○</div>
@@ -422,6 +441,7 @@ if(!store.check)store.check={};
 if(!store.custom)store.custom={};
 if(!store.drills)store.drills=JSON.parse(JSON.stringify(DRILLS));
 if(!store.retos)store.retos=[];
+if(!store.objetivos)store.objetivos=[];
 if(!store.rutinas)store.rutinas={};
 function titleCat(){const m={};Object.keys(SCH).forEach(d=>SCH[d].forEach(b=>{if(!(b.title in m))m[b.title]=b.cat}));return m}
 let editRIdx=-1;
@@ -442,6 +462,52 @@ document.getElementById("btnAddR").style.display=""}
 function openRetoForm(idx){editRIdx=idx;const r=idx>=0?store.retos[idx]:{t:"",d:"",limite:"",p:50,m:0};
 document.getElementById("rfT").value=r.t||"";document.getElementById("rfD").value=r.d||"";document.getElementById("rfL").value=r.limite||"";document.getElementById("rfP").value=r.p||50;document.getElementById("rfM").value=r.m||"";
 document.getElementById("retoForm").style.display="";document.getElementById("retoFormBtns").style.display="flex";document.getElementById("btnAddR").disabled=true;document.getElementById("rfDone").style.display=idx>=0?"":"none";document.getElementById("rfDel").style.display=idx>=0?"":"none"}
+const OBJT={semanal:{n:"Semanal",pl:"semanales",c:"#34C759",p:25},mensual:{n:"Mensual",pl:"mensuales",c:"#007AFF",p:50},anual:{n:"Anual",pl:"anuales",c:"#AF52DE",p:100}};
+const MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const MESES_L=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+let editOIdx=-1;
+function objPeriodo(tipo,iso){
+const d=new Date((iso||todayKey())+"T12:00:00");
+if(tipo==="semanal"){const l=new Date(d);l.setDate(d.getDate()-((d.getDay()+6)%7));const f=new Date(l);f.setDate(l.getDate()+6);
+return{k:isoOf(l),lbl:"Semana del "+l.getDate()+" "+MESES[l.getMonth()]+(l.getMonth()!==f.getMonth()?" al "+f.getDate()+" "+MESES[f.getMonth()]:"")}}
+if(tipo==="mensual")return{k:isoOf(d).slice(0,7),lbl:MESES_L[d.getMonth()]+" "+d.getFullYear()};
+return{k:String(d.getFullYear()),lbl:String(d.getFullYear())}}
+function objPts(o){return(OBJT[o.tipo]||OBJT.semanal).p}
+function renderObjetivos(){
+const res={semanal:[0,0],mensual:[0,0],anual:[0,0]};
+["semanal","mensual","anual"].forEach(tipo=>{
+const box=document.getElementById("obj"+tipo.charAt(0).toUpperCase()+tipo.slice(1));if(!box)return;
+const t=OBJT[tipo],nowK=objPeriodo(tipo,todayKey()).k;
+const items=(store.objetivos||[]).map((o,idx)=>({o,idx})).filter(x=>x.o.tipo===tipo).sort((a,b)=>((a.o.hecho?1:0)-(b.o.hecho?1:0))||(((a.o.creado||"")<(b.o.creado||""))?1:-1));
+if(!items.length){box.innerHTML=`<div class="cell"><span class="tinfo"><p>Sin objetivos ${t.pl} todavía.</p></span></div>`;return}
+box.innerHTML="";
+items.forEach(({o,idx})=>{
+const per=objPeriodo(tipo,o.creado||todayKey());const actual=per.k===nowK;
+if(actual){res[tipo][1]++;if(o.hecho)res[tipo][0]++}
+const ptsPill=o.hecho?`<span class="pill" style="background:#34C75922;color:#248A3D">CUMPLIDO ✓${o.logrado?" "+fmtF(o.logrado):""}</span>`:`<span class="pill" style="background:${t.c}22;color:${t.c==="#34C759"?"#248A3D":t.c}">+${objPts(o)} pts</span>`;
+const perPill=`<span class="pill" style="background:#8E8E9322;color:var(--mut)">${esc(per.lbl)}${actual?"":` • ${tipo==="semanal"?"semana anterior":tipo==="mensual"?"mes anterior":"año anterior"}`}</span>`;
+const btn=document.createElement("button");btn.className="cell"+(o.hecho?" done":"");
+btn.innerHTML=`<span class="dot" style="background:${t.c}"></span><span class="check">${o.hecho?"✓":""}</span><span class="tinfo"><h3>${esc(o.t)}</h3>${o.d?`<p>${esc(o.d)}</p>`:""}${o.m?`<p><b>Cómo lo mido:</b> ${esc(o.m)}</p>`:""}${ptsPill} ${perPill}</span><span class="chev">›</span>`;
+btn.onclick=(e)=>{if(e.target.closest(".check")){toggleObj(idx);return}openObjForm(idx)};
+box.appendChild(btn)});
+});
+const r=document.getElementById("objResumen");
+if(r){const fmtR=a=>a[1]?`${a[0]}/${a[1]}`:"—";
+r.innerHTML=`<b>Semana:</b> ${fmtR(res.semanal)} cumplidos • <b>Mes:</b> ${fmtR(res.mensual)} • <b>Año:</b> ${fmtR(res.anual)}<br>Toca el círculo cuando cumplas un objetivo. Puedes tener varios por periodo.`}
+updObjDoneBtn()}
+function toggleObj(idx){
+const o=(store.objetivos||[])[idx];if(!o)return false;
+const p=objPts(o);let cumplido=false;
+if(o.hecho){if(!confirm(`¿Marcar "${o.t}" como no cumplido? Se restan ${p} pts.`))return false;o.hecho=0;o.logrado="";store.pts=Math.max(0,store.pts-p)}
+else{if(!confirm(`¿Cumpliste "${o.t}"? +${p} pts`))return false;o.hecho=1;o.logrado=todayKey();store.pts+=p;cumplido=true;if(navigator.vibrate)navigator.vibrate(20)}
+save();renderAll();return cumplido}
+function updObjDoneBtn(){const b=document.getElementById("ofDone");if(!b)return;const o=editOIdx>=0?(store.objetivos||[])[editOIdx]:null;b.textContent=(o&&o.hecho)?"Marcar no cumplido":"Cumplir objetivo"}
+function openObjForm(idx){editOIdx=idx;
+const o=idx>=0?store.objetivos[idx]:{tipo:"semanal",t:"",d:"",m:""};
+document.getElementById("ofTipo").value=o.tipo||"semanal";document.getElementById("ofT").value=o.t||"";document.getElementById("ofD").value=o.d||"";document.getElementById("ofM").value=o.m||"";
+document.getElementById("objForm").style.display="";document.getElementById("objFormBtns").style.display="flex";document.getElementById("btnAddObj").disabled=true;
+document.getElementById("ofDone").style.display=idx>=0?"":"none";document.getElementById("ofDel").style.display=idx>=0?"":"none";updObjDoneBtn()}
+function closeObjForm(){editOIdx=-1;document.getElementById("objForm").style.display="none";document.getElementById("objFormBtns").style.display="none";document.getElementById("btnAddObj").disabled=false}
 if(!store.sched)store.sched={};
 if(!store.games)store.games=[];
 function gid(){return Date.now().toString(36)+Math.floor(Math.random()*99)}
@@ -465,7 +531,7 @@ function gidNum(s){let h=0;for(const c of String(s))h=(h*31+c.charCodeAt(0))%700
 async function avisoJuego(g){const ln=LN();if(!ln||!g.fecha||!g.hora)return;try{const d=new Date(g.fecha+"T"+g.hora+":00");d.setHours(d.getHours()-2);if(d<=new Date())return;
 const id=gidNum(g.id);await ln.cancel({notifications:[{id}]});await ln.schedule({notifications:[{id,title:"Hoy hay partido",body:"vs "+g.rival+" a las "+g.hora+". ¡A ganar!",schedule:{at:d},smallIcon:"ic_launcher"}]});g.notif=id;save()}catch(e){}}
 async function quitaAvisoJuego(g){const ln=LN();if(!ln||!g||!g.notif)return;try{await ln.cancel({notifications:[{id:g.notif}]})}catch(e){}}
-const APP_V="1.0.16";
+const APP_V="1.0.17";
 function save(){localStorage.setItem("baseEliteMX",JSON.stringify(store))}
 function ptsFor(b){return b.cat==="basket"?20:10}
 function toMin(t){const[a,b]=t.split(":").map(Number);return a*60+b}
@@ -834,6 +900,8 @@ if(gj.length){const n2=gj.length,S=k=>gj.reduce((s,g)=>s+(+g[k]||0),0);
 out+=`\nPROMEDIOS (${n2} juegos): PPJ ${(S("pts")/n2).toFixed(1)}, APJ ${(S("ast")/n2).toFixed(1)}, RPJ ${(S("reb")/n2).toFixed(1)}, %TC ${pct(S("tcm"),S("tci"))}, Pér ${(S("per")/n2).toFixed(1)}\n`}
 const ra=(store.retos||[]).filter(r=>!r.hecho);
 if(ra.length)out+=`\nRetos activos del coach: ${ra.map(r=>r.t+(r.limite?" (límite "+dayLabel(r.limite)+")":"")).join("; ")}\n`;
+const objs=(store.objetivos||[]).filter(o=>!o.hecho);
+if(objs.length)out+=`\nObjetivos activos: `+["semanal","mensual","anual"].map(t=>{const a=objs.filter(o=>o.tipo===t);return a.length?`${OBJT[t].n}: ${a.map(o=>o.t).join(", ")}`:""}).filter(Boolean).join(" • ")+`\n`;
 const adh=totB?Math.round(totD/totB*100):0;
 out+=`\nAdherencia total: ${totD}/${totB} (${adh}%), +${totP} pts en el rango.\n`;
 out+=`\n--- PROMPT PARA LA IA ---\nActúa como coach de baloncesto infantil. El jugador tiene ${edad}, juega de base y quiere ser el mejor base de México. Con los datos de arriba analiza: 1) adherencia y constancia, 2) equilibrio escuela-entreno-descanso (objetivo dormir 9.5 h), 3) rendimiento en juegos y qué mejorar puesto por puesto. Dime qué mantener, qué mejorar y qué reducir, más 3 acciones concretas para la próxima semana. Sé breve, directo y motivador, con lenguaje para un niño de 12 años y su papá.`;
@@ -849,9 +917,9 @@ if(c.sueno||c.agua||c.animo||c.nota||c.estado)h+=`<div class="cell"><span class=
 (store.games||[]).filter(g=>g.fecha===iso).forEach(g=>{h+=`<div class="cell"><span class="tinfo"><h3>${g.estado==="jug"?WL(g)+" "+(g.eq===""||g.eq==null?"?":g.eq)+"-"+(g.riv===""||g.riv==null?"?":g.riv)+" vs "+esc(g.rival):"Programado vs "+esc(g.rival)}</h3><p>${+g.pts||0} pts • ${+g.ast||0} ast • ${+g.reb||0} reb • %TC ${pct(g.tcm,g.tci)}</p></span></div>`});
 box.innerHTML=h}
 function moveHist(n){const inp=document.getElementById("histFecha");const d=new Date(((inp.value||todayKey()))+"T12:00:00");d.setDate(d.getDate()+n);let iso=d.toISOString().slice(0,10);if(iso>todayKey())iso=todayKey();inp.value=iso;renderHist()}
-function ensureIds(){[...(store.drills||[]),...(store.retos||[])].forEach(x=>{if(x&&!x.id)x.id=gid()})}
+function ensureIds(){[...(store.drills||[]),...(store.retos||[]),...(store.objetivos||[])].forEach(x=>{if(x&&!x.id)x.id=gid()})}
 function linkOf(b){if(!b||!b.link)return{};if(b.link.k==="d")return{LD:(store.drills||[]).find(x=>x.id===b.link.id)};return{LR:(store.retos||[]).find(x=>x.id===b.link.id)}}
-function renderAll(){ensureIds();renderDays();renderList();renderDrills();renderRetos();renderRutinas();renderStats();renderProfile();renderCheckAlert();renderGames();renderGameAlert();renderHist()}
+function renderAll(){ensureIds();renderDays();renderList();renderDrills();renderRetos();renderObjetivos();renderRutinas();renderStats();renderProfile();renderCheckAlert();renderGames();renderGameAlert();renderHist()}
 function goTab(id){document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));const b=document.querySelector(`nav button[data-v="${id}"]`);if(b)b.classList.add("active");document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo({top:0,behavior:"smooth"})}
 function renderCheckAlert(){
 const box=document.getElementById("checkAlert");if(!box)return;
@@ -889,14 +957,14 @@ document.getElementById("dTimer").onclick=()=>{if(!curD)return;
 if(curD.LR){const r=curD.LR;if(r.hecho)return;if(confirm(`¿Completaste "${r.t}"? +${+r.p||0} pts`)){r.hecho=1;store.pts+=+r.p||0;if(navigator.vibrate)navigator.vibrate(20);save();renderAll();openDetail(curD.b,curD.i,curD.key,curD.arr)}return}
 const m=curD.LD?+curD.LD.m||5:curD.b.timer;document.getElementById("detailModal").style.display="none";openTimer(m,curD.LD?curD.LD.t:curD.b.title)};
 document.getElementById("dSaveCustom").onclick=()=>{if(!curD)return;const lines=document.getElementById("dCustom").value.split("\n").map(s=>s.trim()).filter(s=>s);store.custom[curD.b.title]=lines;save();document.getElementById("dSteps").innerHTML=(lines.length?lines.map(esc):getGuide(curD.b).p).map(s=>`<li>${s}</li>`).join("");if(navigator.vibrate)navigator.vibrate(10)};
-function baseTab(t){document.querySelectorAll("#baseTabs button").forEach(x=>x.classList.toggle("on",x.dataset.t===t));["sub-ej","sub-rut","sub-ret"].forEach(id=>document.getElementById(id).style.display=id===t?"":"none")}
+function baseTab(t){document.querySelectorAll("#baseTabs button").forEach(x=>x.classList.toggle("on",x.dataset.t===t));["sub-ej","sub-rut","sub-ret","sub-obj"].forEach(id=>document.getElementById(id).style.display=id===t?"":"none")}
 document.querySelectorAll("#baseTabs button").forEach(b=>b.onclick=()=>baseTab(b.dataset.t));
 document.getElementById("dEditRut").onclick=()=>{if(!curD)return;const t=curD.b.title;document.getElementById("detailModal").style.display="none";goTab("v-base");baseTab("sub-rut");openRutForm(t)};
 document.getElementById("dClose").onclick=()=>{document.getElementById("detailModal").style.display="none"};
 document.getElementById("btnHoy").onclick=()=>{cur=DAYS[(new Date().getDay()+6)%7]||"Lunes";renderAll()};
 document.getElementById("btnPerfilTop").onclick=()=>goTab("v-perfil");
 document.getElementById("btnReset").onclick=()=>{if(confirm("¿Reiniciar "+cur+"?")){delete store.done[cur+"_"+new Date().toISOString().slice(0,10)];save();renderAll()}};
-document.getElementById("btnResetAll").onclick=()=>{if(confirm("¿Borrar puntos, racha y avance? Es para empezar de cero.")){const prof=store.profile,chk=store.check,cus=store.custom,dri=store.drills,sch=store.sched,gam=store.games,ret=store.retos,rut=store.rutinas,seen=store.seen,th=store.uiTheme,qu=store.uiQuick,hd=store.uiHead;localStorage.removeItem("baseEliteMX");store.done={};store.pts=0;store.racha=0;store.rachaDays=[];store.profile=prof;store.check=chk;store.custom=cus;store.drills=dri;store.sched=sch;store.games=gam;store.retos=ret;store.rutinas=rut;store.seen=seen;store.uiTheme=th;store.uiQuick=qu;store.uiHead=hd;save();renderAll()}};
+document.getElementById("btnResetAll").onclick=()=>{if(confirm("¿Borrar puntos, racha y avance? Es para empezar de cero.")){const prof=store.profile,chk=store.check,cus=store.custom,dri=store.drills,sch=store.sched,gam=store.games,ret=store.retos,obj=store.objetivos,rut=store.rutinas,seen=store.seen,th=store.uiTheme,qu=store.uiQuick,hd=store.uiHead;localStorage.removeItem("baseEliteMX");store.done={};store.pts=0;store.racha=0;store.rachaDays=[];store.profile=prof;store.check=chk;store.custom=cus;store.drills=dri;store.sched=sch;store.games=gam;store.retos=ret;store.objetivos=obj;store.rutinas=rut;store.seen=seen;store.uiTheme=th;store.uiQuick=qu;store.uiHead=hd;save();renderAll()}};
 function openBlockForm(idx){editBIdx=idx;const a=schedFor(cur);const b=idx>=0?a[idx]:{start:"08:00",end:"09:00",title:"",detail:"",cat:"basket",timer:0};
 document.getElementById("bfS").value=b.start||"08:00";document.getElementById("bfE").value=b.end||"09:00";document.getElementById("bfT").value=b.title||"";document.getElementById("bfD").value=b.detail||"";document.getElementById("bfC").value=b.cat||"basket";document.getElementById("bfM").value=b.timer||"";
 ensureIds();
@@ -941,6 +1009,18 @@ if(!t){document.getElementById("rfT").focus();return}
 const r={t,d:document.getElementById("rfD").value.trim(),limite:document.getElementById("rfL").value,p:Math.max(5,Math.min(100,+document.getElementById("rfP").value||50)),m:Math.max(0,Math.min(120,+document.getElementById("rfM").value||0))};
 if(editRIdx>=0){r.hecho=store.retos[editRIdx].hecho||0;r.id=store.retos[editRIdx].id||gid();store.retos[editRIdx]=r}else{r.hecho=0;r.id=gid();store.retos.push(r)}
 save();editRIdx=-1;document.getElementById("retoForm").style.display="none";document.getElementById("retoFormBtns").style.display="none";document.getElementById("btnAddR").disabled=false;renderRetos()};
+document.getElementById("btnAddObj").onclick=()=>openObjForm(-1);
+document.getElementById("ofCancel").onclick=()=>closeObjForm();
+document.getElementById("ofDone").onclick=()=>{if(editOIdx<0)return;if(toggleObj(editOIdx))closeObjForm()};
+document.getElementById("ofDel").onclick=()=>{if(editOIdx>=0&&confirm("¿Eliminar este objetivo?")){store.objetivos.splice(editOIdx,1);save();closeObjForm();renderAll()}};
+document.getElementById("ofSave").onclick=()=>{
+const t=document.getElementById("ofT").value.trim();
+if(!t){document.getElementById("ofT").focus();return}
+const tipo=document.getElementById("ofTipo").value;
+const o={tipo,t,d:document.getElementById("ofD").value.trim(),m:document.getElementById("ofM").value.trim()};
+if(editOIdx>=0){const prev=store.objetivos[editOIdx];o.hecho=prev.hecho||0;o.logrado=prev.logrado||"";o.creado=prev.creado||todayKey();o.id=prev.id||gid();store.objetivos[editOIdx]=o}
+else{o.hecho=0;o.logrado="";o.creado=todayKey();o.id=gid();store.objetivos.push(o)}
+save();closeObjForm();renderAll()};
 document.getElementById("btnAddU").onclick=()=>openRutForm("");
 document.getElementById("ruCancel").onclick=()=>{editRutT=null;document.getElementById("rutForm").style.display="none";document.getElementById("rutFormBtns").style.display="none";renderRutinas()};
 document.getElementById("ruDefault").onclick=()=>{const t=document.getElementById("ruT").value.trim();if(t&&(store.rutinas||{})[t]){if(confirm("¿Volver a la rutina original de "+t+"?")){delete store.rutinas[t];save();renderRutinas();openRutForm(t)}}};
@@ -1011,7 +1091,7 @@ document.getElementById("buRestore").onclick=()=>{let o;try{o=JSON.parse(documen
 if(!o||o.app!=="base-elite-mx"||!o.store||typeof o.store.done!=="object"||typeof o.store.pts!=="number"){alert("Ese texto no es un respaldo válido.");return}
 if(!confirm("¿Reemplazar todos los datos actuales con este respaldo?"))return;
 const s=o.store;store.done=s.done||{};store.pts=s.pts||0;store.racha=s.racha||0;store.rachaDays=s.rachaDays||[];
-store.profile=s.profile||store.profile;store.check=s.check||{};store.custom=s.custom||{};store.drills=s.drills||store.drills;store.sched=s.sched||{};store.games=s.games||[];store.retos=s.retos||[];store.rutinas=s.rutinas||{};if(s.seen)store.seen=s.seen;if(s.uiTheme)store.uiTheme=s.uiTheme;
+store.profile=s.profile||store.profile;store.check=s.check||{};store.custom=s.custom||{};store.drills=s.drills||store.drills;store.sched=s.sched||{};store.games=s.games||[];store.retos=s.retos||[];store.objetivos=s.objetivos||[];store.rutinas=s.rutinas||{};if(s.seen)store.seen=s.seen;if(s.uiTheme)store.uiTheme=s.uiTheme;
 save();renderAll();document.getElementById("backupModal").style.display="none";alert("Respaldo restaurado.")};
 function wStep(n){[1,2,3].forEach(k=>document.getElementById("wStep"+k).style.display=k===n?"":"none");document.getElementById("wDots").textContent=n===1?"●○○":n===2?"○●○":"○○●"}
 document.getElementById("wNext1").onclick=()=>{const v=document.getElementById("wNombre").value.trim();if(v){if(!store.profile)store.profile={};store.profile.nombre=v;save()}wStep(2)};
